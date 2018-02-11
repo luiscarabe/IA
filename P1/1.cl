@@ -97,5 +97,30 @@
 (sc-rec l1 l4)
 (sc-mapcar l1 l4)
 (sc-rec l4 l4)
-(sc-mapcar l1 l4)
+(sc-mapcar l4 l4)
 
+
+
+;;; 1.2 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-conf (cat vs conf)
+;;; Devuelve aquellos vectores similares a una categoria
+;;; INPUT: cat: vector que representa a una categoría, representado como una lista
+;;; vs: vector de vectores
+;;; conf: Nivel de confianza
+;;; OUTPUT: Vectores cuya similitud con respecto a la categoría es superior al
+;;; nivel de confianza, ordenados
+
+(defun sc-conf (cat vs conf) 
+  (if (or (null cat) (null vs) (null conf))
+      nil
+    (remove-if #'(lambda(x) (> conf (sc-rec x cat))) 
+               (sort (copy-list vs) #'(lambda(x y) (> (sc-rec x cat) (sc-rec y cat)))))))
+
+(setf l5 '((56 0 678) (1 2 3) (6 7 8) (1000 0 123) (10 11 12)))
+(setf categ '(1 2 3))
+(setf confi 0.9)
+
+(sc-conf categ l5 confi)
+l5
