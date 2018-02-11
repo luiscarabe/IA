@@ -164,6 +164,15 @@ l5
   (let ((primer (first (sc-special-sort cats text func))))
     (cons (first primer) (cons (funcall func (rest text) (rest primer)) nil))))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; sc-classifier-rec (cats texts func)
+;; Clasifica a los textos en categorías de manera recursiva
+;;;
+;;; INPUT: cats: vector de vectores, representado como una lista de listas
+;;; texts: vector de vectores, representado como una lista de listas
+;;; func: función para evaluar la similitud coseno
+;;; OUTPUT: Pares identificador de categoría con resultado de similitud coseno
+
 (defun sc-classifier-rec (cats texts func)
   (if (null (first texts))
       nil
@@ -178,11 +187,18 @@ l5
 ;;; func: función para evaluar la similitud coseno
 ;;; OUTPUT: Pares identificador de categoría con resultado de similitud coseno
 ;;;
+
 (defun sc-classifier (cats texts func)
   (if (or (null cats) (null texts) (null func))
       nil
     (sc-classifier-rec cats texts func)))
 
-(setf cats '((1 43 23 12) (2 33 54 24)))
-(setf texts '((1 3 22 134) (2 43 26 58)))
-    
+
+;; 1.4 
+
+(setf cats '((1 43 23 12 45 72 45 23 43) (2 33 54 24 78 24 54 12 1)))
+(setf texts '((1 3 22 134 1 2 3 4 5) (2 43 26 58 5 6 78 27 34)))
+(time (sc-classifier cats texts #'sc-rec)) 
+(time (sc-classifier cats texts #'sc-mapcar))
+
+
