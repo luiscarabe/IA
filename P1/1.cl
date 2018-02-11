@@ -202,3 +202,4 @@ l5
 (time (sc-classifier cats texts #'sc-mapcar))
 
 
+
