@@ -162,7 +162,7 @@ l5
 
 (defun sc-classifier-aux (cats text func)
   (let ((primer (first (sc-special-sort cats text func))))
-    (cons (first primer) (cons (funcall func (rest text) (rest primer)) nil))))
+    (list (first primer) (funcall func (rest text) (rest primer)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier-rec (cats texts func)
