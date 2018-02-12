@@ -180,7 +180,7 @@ l5
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-classifier (cats texts func)
-;;; Clasifica a los textos en categorías.
+;; Clasifica a los textos en categorías.
 ;;;
 ;;; INPUT: cats: vector de vectores, representado como una lista de listas
 ;;; texts: vector de vectores, representado como una lista de listas
