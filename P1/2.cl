@@ -10,13 +10,13 @@
 ;;; OUTPUT: raiz de f
 
 (defun bisect (f a b tol) 
-	(if (>= (* (funcall f a) (funcall f b)) 0)
-     nil
-   (if (or (< (- b a) tol) (= (funcall f (/ (+ a b) 2)) 0))
-     	(/ (+ a b) 2)
-    (if(< (* (funcall f a) (funcall f (/ (+ a b) 2))) 0)
-				(bisect f a (/ (+ a b) 2) tol)
-			(bisect f (/ (+ a b) 2) b tol)))))
+  (if (>= (* (funcall f a) (funcall f b)) 0)
+      nil
+    (if (or (< (- b a) tol) (= (funcall f (/ (+ a b) 2)) 0))
+        (/ (+ a b) 2)
+      (if(< (* (funcall f a) (funcall f (/ (+ a b) 2))) 0)
+          (bisect f a (/ (+ a b) 2) tol)
+        (bisect f (/ (+ a b) 2) b tol)))))
 
 ;;; Resultados obtenidos
 (bisect #'(lambda(x) (sin (* 6.26 x))) 0.1 0.7 0.001) ;;---> 0.5016602
@@ -35,10 +35,10 @@
 ;;; OUTPUT: lista con todas las raíces encontradas de f
 
 (defun allroot (f lst tol)
-	(if (not (null (rest lst)))
-		(if (not (null (bisect f (first lst) (second lst) tol)))
-			(append (list (bisect f (first lst) (second lst) tol))(allroot f (rest lst) tol))
-			(allroot f (rest lst) tol))))
+  (if (not (null (rest lst)))
+      (if (not (null (bisect f (first lst) (second lst) tol)))
+          (append (list (bisect f (first lst) (second lst) tol))(allroot f (rest lst) tol))
+        (allroot f (rest lst) tol))))
 
 ;;; Resultados obtenidos
 
@@ -54,9 +54,9 @@
 ;;; OUTPUT: potencia de 2
 
 (defun power (N)
-	(if (= N 0) 
-		1
-		(* 2 (power (- N 1)))))
+  (if (= N 0) 
+      1
+    (* 2 (power (- N 1)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; lst (a iter p div)
@@ -69,9 +69,9 @@
 ;;; OUTPUT: raiz de f
 
 (defun lst(a iter max div)
-	(if (/= iter max) 
-		(cons (+ a (* iter div))(lst a (+ 1 iter) max div))
-	  (list (+ a (* iter div)))))
+  (if (/= iter max) 
+      (cons (+ a (* iter div))(lst a (+ 1 iter) max div))
+    (list (+ a (* iter div)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; allind (f a b N tol)
@@ -86,7 +86,7 @@
 ;;; OUTPUT: Lista con las raices encontradas
 
 (defun allind (f a b N tol) 
-	(allroot f (lst a 0 (power N) (/(- b a) (power N))) tol))
+  (allroot f (lst a 0 (power N) (/(- b a) (power N))) tol))
 
 
 ;; Resultados obtenidos

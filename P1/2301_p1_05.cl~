@@ -1,6 +1,10 @@
 ;; Nuria Cuaresma, Luis Carabe
 ;; Pareja 05, grupo 2301
 
+;;;;;;;;;;;;;;;;;
+;; Ejercicio 1 ;;
+;;;;;;;;;;;;;;;;;
+
 ;;; 1.1
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -75,24 +79,6 @@
       (/ (sc-pvect-mapcar x y) (* (sqrt (sc-pvect-mapcar x x)) (sqrt (sc-pvect-mapcar y y))))
     nil))
 
-(setf l1 '(0 0 0 2))
-(setf l2 '(0 0 0 0))
-(setf l3 '())
-(setf l4 '(2 3 4 5))
-
-(sc-rec l1 l2)
-(sc-mapcar l1 l2)
-(sc-rec l1 l1)
-(sc-mapcar l1 l1)
-(sc-rec l1 l3)
-(sc-mapcar l1 l3)
-(sc-rec l1 l4)
-(sc-mapcar l1 l4)
-(sc-rec l4 l4)
-(sc-mapcar l4 l4)
-
-
-
 ;;; 1.2 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -121,14 +107,7 @@
       nil ;; Eliminamos los que no cumplen el grado de confianza
     (remove-if #'(lambda(x) (> conf (sc-rec x cat))) (sc-sort cat vs #'sc-rec))))
 
-(setf l5 '((56 0 678) (1 2 3) (6 7 8) (1000 0 123) (10 11 12)))
-(setf categ '(1 2 3))
-(setf confi 0.9)
-
-(sc-conf categ l5 confi)
-l5
-
-;; 1.3
+;;; 1.3
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; sc-special-sort (cats text func)
@@ -186,15 +165,9 @@ l5
     (sc-classifier-rec cats texts func)))
 
 
-;; 1.4 
+;;; 1.4 
 
-(setf cats '((1 43 23 12 45 72 45 23 43) (2 33 54 24 78 24 54 12 1)))
-(setf texts '((1 3 22 134 1 2 3 4 5) (2 43 26 58 5 6 78 27 34)))
-(time (sc-classifier cats texts #'sc-rec)) 
-(time (sc-classifier cats texts #'sc-mapcar))
-
-(setf lista1 (make-list 20 :initial-element '1))
-(setf lista2 (make-list 20 :initial-element '2))
+;; Este ejercicio se refleja unicamente en la memoria
 
 
 

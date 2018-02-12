@@ -73,11 +73,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; combine-lst-lst-spe (elt lst)
 ;;; Funcion que combina un elemento dado con todos los elementos de una
-;;; lista, el elemento resulta ser una lista
+;;; lista, el elemento resulta ser una lista, es decir, realiza el
+;;; producto cartesiano de un elemento de la forma (A B) con una lista
 ;;; INPUT: elt elemento a combinar (es una lista)
 ;;;        lst vector, representado como una lista
 ;;; OUTPUT: lista con el elemento combinado
-
 
 (defun combine-lst-lst-spe (elt lst)
   (if (or (null lst))
