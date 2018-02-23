@@ -40,7 +40,7 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun positive-literal-p (x)
-  )
+  (and (atom x) (not (truth-value-p x)) (not (connector-p x))))
   
 
 ;; EJEMPLOS:
@@ -66,10 +66,7 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun negative-literal-p (x)
-  ;;
-  ;; 4.1.2 Completa el codigo
-  ;;
-  )
+  (and (listp x) (null (cddr x)) (eql (car x) +not+) (positive-literal-p (car (cdr x)))))
 
 ;; EJEMPLOS:
 (negative-literal-p '(~ p))        ; T
@@ -153,6 +150,19 @@
 ;;; evaluan a NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; Verifica si una expresion es de la forma
+;; op <wff> op <wff> ... op <wff>
+;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun nop-verify (op exp)
+  (or (null exp) 
+      (and (equal op (car exp))
+           (wff-infix-p(cadr exp))
+           (nop-verify op (cddr exp)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.4
 ;; Predicado para determinar si una expresion esta en formato infijo 
 ;;
@@ -162,36 +172,25 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun wff-infix-p (x)
-  (unless (null x)
-    (or (literal-p x)
-        (and (listp x)
+  (unless (null x) ;; NIL no es FBF en formato infijo (por convencion)
+    (or (literal-p x)  ;; Un literal es FBF en formato infijo
+        (and (listp x) ;; En caso de que no sea un literal debe ser una lista
              (let ((op1 (car x))
                    (ex1 (cadr x))
                    (lex2 (cddr x)))
                (cond
-                ((unary-connector-o op1)
-                 (and (null lex2)
+                ((and (null ex1) (n-ary-connector-p op1)) t) ;; Por convencion 
+                ((unary-connector-p op1)  ;; Si el primer elemento es un conector unario 
+                 (and (null lex2)         ;; deberia tener la estructura (<conector> FBF)
                       (wff-infix-p ex1)))
-                ((binary-connector-p ex1)
-                 (and (wff-infix-p op1)
+                ((binary-connector-p ex1) ;; Si el segundo elemento es un conector binario 
+                 (and (wff-infix-p op1)   ;; deberia tener la estructura (FBF <conector> FBF)
                       (null (cdr lex2))
                       (wff-infix-p (car lex2))))
-                ((n-arg-connector-p ex1)
-                 (and (wff-infix-p op1)
+                ((n-ary-connector-p ex1) ;; Si el segundo elemento es un conector binario
+                 (and (wff-infix-p op1)  ;; el primer elemento deberia ser FBF
                       (nop-verify ex1 (cdr x))))
-                (t NIL)))))))
-
-;;
-;; Verifies that an exression is of the form
-;;
-;; op <wff> op <wff> ... op <wff>
-
-
-(defun nop-verify (op exp)
-  (or (null exp)
-      (and (equal op (car exp))
-           (wff-infix-p(cadr exp))
-           (nop-verify op (cddr exp)))))
+                (t NIL))))))) ;; No es FBF en formato infijo
   
 
 ;;
@@ -278,10 +277,25 @@
 ;; EVALUA A : FBF en formato prefijo 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun infix-to-prefix (wff)
-  ;;
-  ;; 4.1.5 Completa el codigo
-  ;;
-  )
+  (when (wff-infix-p wff)
+    (if (literal-p wff) ;; Si es un literal, ya esta de la forma prefijo
+        wff
+      (let ((connector (second wff))
+            (1-element (first wff)))
+        (cond
+         ((n-ary-connector-p 1-element) ;; Cubrimos el caso de conjuncion o disyuncion vacias,
+          wff)                          ;; por convencion se acepta como fbf en formato prefijo
+         ((unary-connector-p 1-element) ;; Si el operador es un-ario, siempre va delante del elemento
+          (list 1-element (infix-to-prefix (cadr wff))))
+         ((binary-connector-p connector) 
+          (list connector
+                (infix-to-prefix 1-element)
+                (infix-to-prefix (third wff))))
+         ((n-ary-connector-p connector) 
+          (cons connector 
+                    (mapcan #'(lambda(x) (list (infix-to-prefix x))) ;; Pasamos a prefijo todas las expresiones
+                      (remove-if #'n-ary-connector-p wff )))) ;; Eliminamos los operadores de la lista
+         (t NIL)))))) ;; no deberia llegar a este paso nunca cddr wff
 
 ;;
 ;; EJEMPLOS
@@ -291,9 +305,6 @@
 (infix-to-prefix '((a)))   ;; NIL
 (infix-to-prefix '(a))     ;; NIL
 (infix-to-prefix '(((a)))) ;; NIL
-(prefix-to-infix (infix-to-prefix '((p v (a => (b ^ (~ c) ^ d))) ^ ((p <=> (~ q)) ^ p) ^ e)) ) 
-;;-> ((P V (A => (B ^ (~ C) ^ D))) ^ ((P <=> (~ Q)) ^ P) ^ E)
-
 
 (infix-to-prefix '((p v (a => (b ^ (~ c) ^ d))) ^  ((p <=> (~ q)) ^ p) ^ e))  
 ;; (^ (V P (=> A (^ B (~ C) D))) (^ (<=> P (~ Q)) P) E)
@@ -329,6 +340,7 @@
 (infix-to-prefix '(((P <=> (~ Q)) ^ P) ^ E))  ; (^ (^ (<=> P (~ Q)) P) E)
 (infix-to-prefix '((~ P) V Q V (~ R) V (~ S))); (V (~ P) Q (~ R) (~ S))
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.6
 ;; Predicado para determinar si una FBF es una clausula  
@@ -337,10 +349,7 @@
 ;; EVALUA A : T si FBF es una clausula, NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun clause-p (wff)
-  ;;
-  ;; 4.1.6 Completa el codigo
-  ;;
-  )
+  (and (listp wff) (eql (first wff) +or+) (every #'literal-p (rest wff))))
 
 ;;
 ;; EJEMPLOS:
@@ -360,7 +369,7 @@
 (clause-p '(~ (v p q)))           ; NIL
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; EJERCICIO 1.7
+;; EJERCICIO 4.1.7
 ;; Predicado para determinar si una FBF esta en FNC  
 ;;
 ;; RECIBE   : FFB en formato prefijo 
@@ -368,10 +377,7 @@
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun cnf-p (wff)
-  ;;
-  ;; 4.1.7 Completa el codigo
-  ;;
-  )
+  (and (listp wff) (eql (first wff) +and+) (every #'clause-p (rest wff))))
 
 ;;
 ;; EJEMPLOS:
