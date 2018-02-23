@@ -416,17 +416,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-biconditional (wff)
-  (if (or (null wff) (literal-p wff))
-      wff
+  (if (or (null wff) (literal-p wff)) ;; Caso base: nil o literal, en ese caso,
+      wff                             ;; devolvemos la fbf tal cual
     (let ((connector (first wff)))
-      (if (eq connector +bicond+)
-          (let ((wff1 (eliminate-biconditional (second wff)))
-                (wff2 (eliminate-biconditional (third  wff))))
-            (list +and+ 
-                  (list +cond+ wff1 wff2)
+      (if (eq connector +bicond+) ;; Comprobamos si el operador es el conector bicondicional
+          (let ((wff1 (eliminate-biconditional (second wff)))   ;; Teniendo la expresion (<=> exp1 exp2), eliminamos 
+                (wff2 (eliminate-biconditional (third  wff))))  ;; posibles conectores bicondicionales de exp1 y exp2
+            (list +and+                      
+                  (list +cond+ wff1 wff2)   ;; Creamos la lista de la forma (^ (=> exp1 exp2) (=> exp2 exp1))
                   (list +cond+ wff2 wff1)))
-        (cons connector 
-              (mapcar #'eliminate-biconditional (rest wff)))))))
+        (cons connector ;; Si el operador no es el conector bicondicional, analizamos el resto de la fbf
+            (mapcar #'eliminate-biconditional (rest wff))))))) 
+        
 
 ;;
 ;; EJEMPLOS:
@@ -447,17 +448,25 @@
 ;;            sin el connector =>
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-conditional (wff)  
-  ;;
-  ;; 4.2.2 Completa el codigo
-  ;;
-  )       
+  (if (or (null wff) (literal-p wff)) ;; Caso base: nil o literal, en ese caso,
+      wff                             ;; devolvemos la fbf tal cual
+    (let ((connector (first wff)))
+      (if (eq connector +cond+) ;; Comprobamos si el operador es el conector condicional
+          (let ((wff1 (eliminate-conditional (second wff)))   ;; Teniendo la expresion (=> exp1 exp2), eliminamos 
+                (wff2 (eliminate-conditional (third  wff))))  ;; posibles conectores condicionales de exp1 y exp2
+            (list +or+ ;; Creamos la lista de la forma (v (~ exp1) exp2)
+                  (list +not+ wff1) 
+                  wff2))
+        (cons connector ;; Si el operador no es el conector condicional, analizamos el resto de la fbf
+              (mapcar #'eliminate-conditional (rest wff))))))) 
+
 
 ;;
 ;; EJEMPLOS:
 ;;
 (eliminate-conditional '(=> p q))                      ;;; (V (~ P) Q)
 (eliminate-conditional '(=> p (v q s p)))              ;;; (V (~ P) (V Q S P))
-(eliminate-conditional '(=> (=> (~ p) q) (^ s (~ q)))) ;;; (V (~ (V (~ (~ P)) Q)) (^ S (~ Q)))
+(eliminate-conditionaxl '(=> (=> (~ p) q) (^ s (~ q)))) ;;; (V (~ (V (~ (~ P)) Q)) (^ S (~ Q)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.2.3
@@ -471,10 +480,18 @@
 ;;            negativos.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun reduce-scope-of-negation (wff)
-  ;;
-  ;; 4.2.3 Completa el codigo
-  ;;
-  )
+   (if (or (null wff) (literal-p wff)) ;; Caso base: nil o literal, en ese caso,
+       wff                             ;; devolvemos la fbf tal cual
+    (let ((connector (first wff)))
+      (if (eq connector +not+) ;; Comprobamos si el operador es el not
+          (if (eq (caadr wff) +not+) ;; Caso de doble negacion
+              (reduce-scope-of-negation (cadr (cadr wff))) ;; (~ (~ exp1)) -> (exp1)
+            (cons (exchange-and-or (caadr wff)) ;; Aplicamos la ley de De Morgan
+                   (mapcar #'(lambda(x) (reduce-scope-of-negation (list +not+ x)))
+                      (rest (second wff)))))
+        (cons connector ;; Si el operador no es not, analizamos el resto de la fbf
+              (mapcar #'reduce-scope-of-negation (rest wff)))))))
+
 
 (defun exchange-and-or (connector)
   (cond
