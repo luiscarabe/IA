@@ -738,14 +738,20 @@
 ;; EVALUA a : K1 si K1 subsume a K2
 ;;            NIL en caso contrario
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun subsume (K1 K2)
-  (when (null (set-difference K1 K2 :test 'equal))
+  (when (null (set-difference K1 K2 :test 'is-equal))
     (list K1)))
+
+;; Evalua si dos literales son iguales
+
+(defun is-equal (x y)
+  (or (equal x y) (and (listp x) (listp y) (equal +not+ (first x)) (equal +not+ (first y)) (equal (second x) (second y)))))
 ;;
 ;;  EJEMPLOS:
 ;;
-(subsume '(a) '(a b (~ c)))
-;; ((a))
+(subsume '((~ a)) '((~ a) b (~ c)))
+;; (((~ a)))
 (subsume NIL '(a b (~ c)))
 ;; (NIL)
 (subsume '(a b (~ c)) '(a) )
@@ -870,10 +876,9 @@
 ;;            que no contienen el literal lambda ni ~lambda   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun extract-neutral-clauses (lambda cnf) 
-  ;;
-  ;; 4.4.1 Completa el codigo
-  ;;
-  )
+  (when (and (positive-literal-p lambda) (not (null cnf))) 
+    (remove-if-not #'(lambda(x) ;; Eliminamos clausula de la lista si el resultado de subsumir no es nil
+                       (and (null (subsume (list lambda) x)) (null (subsume (list (list +not+ lambda)) x)))) cnf)))
 
 ;;
 ;;  EJEMPLOS:
@@ -907,10 +912,9 @@
 ;;            que contienen el literal lambda  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun extract-positive-clauses (lambda cnf) 
-  ;;
-  ;; 4.4.2 Completa el codigo
-  ;;
-  )
+  (when (and (positive-literal-p lambda) (not (null cnf))) 
+    (remove-if #'(lambda(x) ;; Eliminamos clausula de la lista si el resultado de subsumir con el lambda es nil
+                   (null (subsume (list lambda) x))) cnf)))
 
 ;;
 ;;  EJEMPLOS:
@@ -942,10 +946,9 @@
 ;;            que contienen el literal ~lambda  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun extract-negative-clauses (lambda cnf) 
-  ;;
-  ;; 4.4.3 Completa el codigo
-  ;;
-  )
+  (when (and (positive-literal-p lambda) (not (null cnf))) 
+      (remove-if #'(lambda(x) ;; Eliminamos clausula de la lista si el resultado de subsumir con el ~lambda es nil
+                         (null (subsume (list (list +not+ lambda)) x))) cnf)))
 
 ;;
 ;;  EJEMPLOS:
