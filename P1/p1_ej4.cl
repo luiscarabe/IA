@@ -710,11 +710,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-repeated-clauses (cnf)
-  (compare-clauses cnf))
+  (compare-clauses (mapcar #'eliminate-repeated-literals cnf)))
 	
 (defun compare-clauses (cnf) 
-  (cond ((null cnf) nil)
-        ((null(rest cnf)) cnf)
+  (cond ((or (null cnf) (null(rest cnf))) cnf)
         ((uniq-clause (first cnf) (rest cnf))		
          (cons (first cnf) (compare-clauses (rest cnf))))
         (t (compare-clauses (rest cnf)))))
@@ -769,11 +768,15 @@
 ;; RECIBE   : K (clausula), cnf (FBF en FNC)
 ;; EVALUA A : FBF en FNC equivalente a cnf sin clausulas subsumidas 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun eliminate-subsumed-clauses (cnf) 
-  ;;
-  ;; 4.3.4 Completa el codigo
-  ;;
-)
+  (cond ((or (null cnf) (null(rest cnf))) cnf)
+        ((subsumed-clause (first cnf) (rest cnf))		
+         (cons (first cnf) (eliminate-subsumed-clauses (rest cnf))))
+        (t (eliminate-subsumed-clauses (rest cnf)))))
+
+(defun subsumed-clause (clause cnf)
+	(when(every #'null (mapcar #'(lambda (x) (subsume x clause)) cnf)) T ))
 
 ;;
 ;;  EJEMPLOS:
