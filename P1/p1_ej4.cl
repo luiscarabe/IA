@@ -661,10 +661,23 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-to-cnf (wff)
-	(if (null wff)
-		NIL
-		))
+	(cond ((null wff) NIL)
+		((literal-p wff) wff)
+		(cnf-p (wff)))
+	(cond((member (+bicond+) (wff) :test #'equal) with_cond (wff))
+		((member (+cond+) (wff) :test #'equal) with_cond (wff))
+		(T (without_cond(wff)))))
 
+
+(defun with_cond (wff)
+	without_cond(
+		eliminate-conditional (
+			(eliminate-biconditional (wff)))))
+
+(defun without_cond (wff)
+		 eliminate-connectors (
+		 	combine-elt-lst (
+		 		reduce-scope-of-negation (wff))))
 ;;
 ;; EJEMPLOS:
 ;; 
@@ -683,12 +696,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-repeated-literals (k)
-	(if (null k) 
-      NIL
-    (cond ((literal-p k) k)
+    (cond ((null k)NIL)
+    	  ((literal-p k) k)
 		  ((member (first k) (rest k) :test #'equal)
 		  (eliminate-repeated-literals (rest k)))
-		  (T (cons (first k)(eliminate-repeated-literals (rest k)))))))
+		  (T (cons (first k)(eliminate-repeated-literals (rest k))))))
 
 ;;
 ;; EJEMPLO:
@@ -703,12 +715,23 @@
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
 ;; EVALUA A : FNC equivalente sin clausulas repetidas 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun eliminate-repeated-clauses (cnf) 
-  ;;
-  ;; 4.3.2 Completa el codigo
-  ;;
-  )
 
+(defun eliminate-repeated-clauses (cnf)
+	(compare-clauses cnf))
+	
+(defun compare-clauses (cnf) 
+	(cond	((null cnf) nil)
+	 		((null(rest cnf)) cnf)
+	 		((uniq-clause (first cnf) (rest cnf))		
+				(cons (first cnf) (compare-clauses (rest cnf))))
+			(compare-clauses (rest cnf))))
+
+(defun uniq-clause (clause cnf)
+	(if(every #'null (mapcar #'(lambda (x) (clauses-not-equal clause x)) cnf)) T 
+		NIL))
+
+(defun clauses-not-equal (clause1 clause2)
+	(= (length (intersection clause1 clause2 :test 'equal)) (length clause1) (length clause2)))
 ;;
 ;; EJEMPLO:
 ;;
@@ -724,10 +747,9 @@
 ;;            NIL en caso contrario
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun subsume (K1 K2)
-  ;;
-  ;; 4.3.3 Completa el codigo
-  ;;
-  )
+	(if ((= (length (intersection K1 K2 :test 'equal)) (length K1)) 
+		(intersection K1 K2 :test 'equal))
+		NIL))
   
 ;;
 ;;  EJEMPLOS:
