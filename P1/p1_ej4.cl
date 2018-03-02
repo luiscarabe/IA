@@ -661,23 +661,16 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-to-cnf (wff)
-	(cond ((null wff) NIL)
-		((literal-p wff) wff)
-		(cnf-p (wff)))
-	(cond((member (+bicond+) (wff) :test #'equal) with_cond (wff))
-		((member (+cond+) (wff) :test #'equal) with_cond (wff))
-		(T (without_cond(wff)))))
+  (if (or (null wff) (literal-p wff))
+        wff
+        (reduce-aux (reduce-cond (infix-to-prefix wff)))))
 
+(defun reduce-cond (wff)
+  (eliminate-conditional (eliminate-biconditional wff)))
 
-(defun with_cond (wff)
-	without_cond(
-		eliminate-conditional (
-			(eliminate-biconditional (wff)))))
+(defun reduce-aux (wff)
+  (eliminate-connectors (cnf (reduce-scope-of-negation wff))))
 
-(defun without_cond (wff)
-		 eliminate-connectors (
-		 	combine-elt-lst (
-		 		reduce-scope-of-negation (wff))))
 ;;
 ;; EJEMPLOS:
 ;; 
@@ -696,11 +689,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-repeated-literals (k)
-    (cond ((null k)NIL)
-    	  ((literal-p k) k)
-		  ((member (first k) (rest k) :test #'equal)
-		  (eliminate-repeated-literals (rest k)))
-		  (T (cons (first k)(eliminate-repeated-literals (rest k))))))
+  (cond ((null k)NIL)
+          ((literal-p k) k)
+          ((member (first k) (rest k) :test #'equal)
+           (eliminate-repeated-literals (rest k)))
+        (T (cons (first k)(eliminate-repeated-literals (rest k))))))
 
 ;;
 ;; EJEMPLO:
@@ -717,14 +710,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-repeated-clauses (cnf)
-	(compare-clauses cnf))
+  (compare-clauses cnf))
 	
 (defun compare-clauses (cnf) 
-	(cond	((null cnf) nil)
-	 		((null(rest cnf)) cnf)
-	 		((uniq-clause (first cnf) (rest cnf))		
-				(cons (first cnf) (compare-clauses (rest cnf))))
-			(compare-clauses (rest cnf))))
+  (cond ((null cnf) nil)
+        ((null(rest cnf)) cnf)
+        ((uniq-clause (first cnf) (rest cnf))		
+         (cons (first cnf) (compare-clauses (rest cnf))))
+        (t (compare-clauses (rest cnf)))))
 
 (defun uniq-clause (clause cnf)
 	(if(every #'null (mapcar #'(lambda (x) (clauses-not-equal clause x)) cnf)) T 
@@ -747,10 +740,8 @@
 ;;            NIL en caso contrario
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun subsume (K1 K2)
-	(if ((= (length (intersection K1 K2 :test 'equal)) (length K1)) 
-		(intersection K1 K2 :test 'equal))
-		NIL))
-  
+  (when (null (set-difference K1 K2 :test 'equal))
+    (list K1)))
 ;;
 ;;  EJEMPLOS:
 ;;
