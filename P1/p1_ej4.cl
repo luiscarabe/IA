@@ -829,10 +829,9 @@
 ;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun eliminate-tautologies (cnf) 
-  ;;
-  ;; 4.3.6 Completa el codigo
-  ;;
-  )
+  (cond ((null cnf)  cnf)
+      ((tautology-p (first cnf)) (eliminate-tautologies (rest cnf)))
+      (t (cons (first cnf) (eliminate-tautologies (rest cnf))))))
 
 ;;
 ;;  EJEMPLOS:
@@ -858,9 +857,7 @@
 ;;            y sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun simplify-cnf (cnf) 
-  ;;
-  ;; 4.3.7 Completa el codigo
-  ;;
+  
   )
 
 ;;
