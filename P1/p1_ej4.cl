@@ -8,7 +8,7 @@
 (defconstant +cond+   '=>)
 (defconstant +and+    '^)
 (defconstant +or+     'v)
-(defconstant +not+    '~)
+(defconstant +not+    '~) 
 
 (defun truth-value-p (x) 
   (or (eql x T) (eql x NIL)))
@@ -984,11 +984,16 @@
 ;;                          sobre K1 y K2, con los literales repetidos 
 ;;                          eliminados
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun resolve-on (lambda K1 K2) 
-  ;;
-  ;; 4.4.4 Completa el codigo
-  ;;
-  )
+  (when (or (and (some #'(lambda (x) (is-equal lambda x)) K1) ;; Comprobamos si podemos hacer res
+                 (some #'(lambda (x) (is-equal (list +not+ lambda) x)) K2))
+            (and (some #'(lambda (x) (is-equal lambda x)) K2)
+                 (some #'(lambda (x) (is-equal (list +not+ lambda) x)) K1)))
+    
+    ;; Hacemos union de K1 y K2 para despues quitar de esa lista lambda y ~lambda
+    (list (remove-if #'(lambda (x) (or (is-equal x lambda) (is-equal x (list +not+ lambda))))
+               (union K1 K2 :test #'is-equal)))))
 
 ;;
 ;;  EJEMPLOS:
@@ -1024,12 +1029,26 @@
 ;;            
 ;; EVALUA A : RES_lambda(cnf) con las clauses repetidas eliminadas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun build-RES (lambda cnf)
-  ;;
-  ;; 4.4.5 Completa el codigo
-  ;;
-)
 
+(defun build-RES (lambda cnf)
+  (eliminate-repeated-clauses 
+   (union (extract-neutral-clauses lambda cnf) 
+          (res-aux1 lambda 
+                    (extract-positive-clauses lambda cnf) 
+                    (extract-negative-clauses lambda cnf))
+          :test #'is-equal)))
+
+;; Funcion que aplica res a las clausulas con lambdas negativos y con lambdas positivos
+
+(defun res-aux1 (lambda k1 k2)
+  (unless (or (null k1) (null k2))
+    (union (res-aux2 lambda (first k1) k2) (res-aux1 lambda (rest k1) k2) :test #'is-equal)))
+                  
+;; Funcion que recibe una clausula (k1) y hace res con todas las clausulas de k2
+
+(defun res-aux2 (lambda k1 k2)
+  (unless (null k2)
+    (union (resolve-on lambda k1 (first k2)) (res-aux2 lambda k1 (rest k2)) :test #'is-equal)))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -1038,7 +1057,7 @@
 (build-RES 'P '((A  (~ P) B) (A P) (A B)));; ((A B))
 (build-RES 'P '((B  (~ P) A) (A P) (A B)));; ((B A))
 
-(build-RES 'p '(NIL))
+(build-RES 'p  '(NIL))
 ;; (NIL)
 
 (build-RES 'p '((p) ((~ p))))
@@ -1046,6 +1065,7 @@
 
 (build-RES 'q '((p q) ((~ p) q) (a b q) (p (~ q)) ((~ p) (~ q))))
 ;; ((P) ((~ P) P) ((~ P)) (B A P) (B A (~ P)))
+
 
 (build-RES 'p '((p q) (c q) (a b q) (p (~ q)) (p (~ q))))
 ;; ((A B Q) (C Q))
