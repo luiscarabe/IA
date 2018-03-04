@@ -520,24 +520,24 @@
 ;; EVALUA A : FBF equivalente en formato prefijo FNC 
 ;;            con conectores ^, v
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun combine-elt-lst (elt lst)
+(defun combine-elt-lst (elt lst) ;; Combina un elemento (elt) con los elementos de una lista
   (if (null lst)
       (list (list elt))
     (mapcar #'(lambda (x) (cons elt x)) lst)))
 
 (defun exchange-NF (nf)
-  (if (or (null nf) (literal-p nf)) 
+  (if (or (null nf) (literal-p nf)) ;; en caso de que sea null o un literal, devolvemos él mismo
       nf
-    (let ((connector (first nf)))
-      (cons (exchange-and-or connector)
+    (let ((connector (first nf))) ;; obtenemos el conector de la forma normal
+      (cons (exchange-and-or connector) ;; intercambiamos ambos conectores, and y or
             (mapcar #'(lambda (x)
                           (cons connector x))
                 (exchange-NF-aux (rest nf)))))))
 
 (defun exchange-NF-aux (nf)
   (if (null nf) 
-      NIL
-    (let ((lst (first nf)))
+      NIL ;; devolvemos null en caso de que la forma normal sea null
+    (let ((lst (first nf))) ;; obtenemos al primer elemento de la forma normal
       (mapcan #'(lambda (x) 
                   (combine-elt-lst 
                    x 
