@@ -874,13 +874,16 @@
 
 
 (defun to-cnf (cnf)
-  (eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))) 
+	(cond ((null cnf) cnf)
+        ((some #'null cnf) (list NIL))
+  		(t(eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))))) 
 
 
 (defun elim-literals (cnf)
-  (if (null cnf) NIL
-    (cons(eliminate-repeated-literals (first cnf))
-    (elim-literals (rest cnf)))))
+  (cond ((null cnf) cnf)
+        ((some #'null cnf) (list NIL))
+  	(t(cons(eliminate-repeated-literals (first cnf))
+                (elim-literals (rest cnf))))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -1135,9 +1138,7 @@
 ;;            NIL en caso de que no sea consecuencia logica.  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun logical-consequence-RES-SAT-p (wff w)
-  ;;
-  ;; 4.6 Completa el codigo
-  ;;
+  
   )
 
 ;;
@@ -1201,4 +1202,5 @@
  (logical-consequence-RES-SAT-p 
   '(((~ p) => q) ^ (p <=> ((~ a) ^ b)) ^ ( (~ p) => (r  ^ (~ q)))) 
   '(~ q)))
+
 
