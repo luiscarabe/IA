@@ -811,9 +811,21 @@
 ;; EVALUA a : T si K es tautologia
 ;;            NIL en caso contrario
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun tautology-p (K) 
- (when (not(null (intersection( K (reduce-scope-of-negation ~'K)))))) )
+ (defun tautology-p (K)
+  (if (null k) t
+    (tautology-rec-p k)))
 
+(defun tautology-rec-p (K)
+  (unless (null K)
+    (if (positive-literal-p (first K)) 
+        ;; Si el primer elemento es un literal positivo, buscamos el negado en el resto de la lista
+        (or (some #'(lambda (x) (is-equal x (list +not+ (first K)))) (rest K))
+            (tautology-rec-p (rest K)))
+      
+      ;; Si el primer elemento es un literal negativo, buscamos el positivo en el resto de la lista
+      (or (some #'(lambda (x) (is-equal x (list (second (first K))))) (rest K)) 
+          (tautology-rec-p (rest K))))))
+  
 
 ;;
 ;;  EJEMPLOS:
@@ -828,6 +840,7 @@
 ;; RECIBE   : cnf - FBF en FNC
 ;; EVALUA A : FBF en FNC equivalente a cnf sin tautologias 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun eliminate-tautologies (cnf) 
   (cond ((null cnf)  cnf)
       ((tautology-p (first cnf)) (eliminate-tautologies (rest cnf)))
@@ -857,9 +870,17 @@
 ;;            y sin clausulas subsumidas
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun simplify-cnf (cnf) 
-  
-  )
+   (to-cnf (elim-literals cnf)))
 
+
+(defun to-cnf (cnf)
+  (eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))) 
+
+
+(defun elim-literals (cnf)
+  (if (null cnf) NIL
+    (cons(eliminate-repeated-literals (first cnf))
+    (elim-literals (rest cnf)))))
 ;;
 ;;  EJEMPLOS:
 ;;
