@@ -874,16 +874,16 @@
 
 
 (defun to-cnf (cnf)
-	(cond ((null cnf) cnf)
+  (cond ((null cnf) cnf)
         ((some #'null cnf) (list NIL))
-  		(t(eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))))) 
+        (t(eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))))) 
 
 
 (defun elim-literals (cnf)
   (cond ((null cnf) cnf)
         ((some #'null cnf) (list NIL))
   	(t(cons(eliminate-repeated-literals (first cnf))
-                (elim-literals (rest cnf))))))
+           (elim-literals (rest cnf))))))
 ;;
 ;;  EJEMPLOS:
 ;;
@@ -1100,11 +1100,37 @@
 ;; EVALUA A :	T  si cnf es SAT
 ;;                NIL  si cnf es UNSAT
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun  RES-SAT-p (cnf) 
-  ;;
-  ;; 4.5 Completa el codigo
-  ;;
-  )
+  (cond ((null cnf) t)
+        ((some #'null cnf) nil) ;; LLamamos a RES-SAT-rec-p
+        (t (RES-SAT-rec-p (all-posit-atoms cnf) cnf))))
+
+;; Funcion que realiza REC-SAT-p de manera recursiva, siguiendo el algoritmo propuesto en el enunciado
+
+(defun RES-SAT-rec-p (latoms cnf)
+  (if (or (null latoms) (null cnf)) ;; Si hemos agotado la lista de atomos o cnf ya es null, es SAT
+      t
+    ;; Si no, miramos si hay algun nil en la simplificacion de build-RES
+    (let ((resul (simplify-cnf(build-RES (first latoms) cnf))))
+      (if (some #'null resul) 
+          nil ;; En este caso es UNSAT
+        (RES-SAT-rec-p (rest latoms) resul))))) ;; Llamamos de nuevo a la funcion con la simplificacion
+    
+;; Funcion que devuelve todos los atomos positivos de un FBF, sin eliminar repetidos
+
+(defun all-posit-atoms (cnf)
+  (mapcar #'(lambda (x) 
+              (if (positive-literal-p x)
+                  x
+                (second x))) (all-atoms cnf)))
+
+
+;; Esta funcion coge tanto literales positivos como negativos, solo queremos los positivos
+(defun all-atoms (cnf)
+  (unless (null cnf)
+    (union (first cnf) (all-atoms (rest cnf)) :test #'is-equal)))
+
 
 ;;
 ;;  EJEMPLOS:
@@ -1137,9 +1163,15 @@
 ;; EVALUA A : T   si w es consecuencia logica de wff
 ;;            NIL en caso de que no sea consecuencia logica.  
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Miramos si RES de wff (en FNC simplificada) U ~w es SAT o UNSAT 
+
 (defun logical-consequence-RES-SAT-p (wff w)
-  
-  )
+  (not (RES-SAT-p (union 
+                   (simplify-cnf (wff-infix-to-cnf wff))
+                   (cond ((positive-literal-p w) (list (list (list +not+ w))))
+                         (t (list (list (second w)))))
+                   :test #'is-equal))))
 
 ;;
 ;;  EJEMPLOS:
