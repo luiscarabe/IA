@@ -532,7 +532,7 @@
       (cons (exchange-and-or connector) ;; intercambiamos ambos conectores, and y or
             (mapcar #'(lambda (x)
                           (cons connector x))
-                (exchange-NF-aux (rest nf)))))))
+                (exchange-NF-aux (rest nf))))))) ;;
 
 (defun exchange-NF-aux (nf)
   (if (null nf) 
@@ -556,7 +556,7 @@
                     (rest x))) 
                  (t (list x))))               
       lst-wffs)))
-
+;;
 (defun cnf (wff)
   (cond
    ((cnf-p wff) wff)
