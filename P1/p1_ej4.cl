@@ -56,6 +56,7 @@
 ;; evaluan a NIL
 
 
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; EJERCICIO 4.1.2
 ;; Predicado para determinar si una expresion
@@ -763,20 +764,20 @@
 ;;
 ;;  EJEMPLOS:
 ;;
-(subsume '((~ a)) '((~ a) b (~ c)))
-;; (((~ a)))
+(subsume '(a) '(a b (~ c)))
+;; ((a))
 (subsume NIL '(a b (~ c)))
 ;; (NIL)
 (subsume '(a b (~ c)) '(a) )
 ;; NIL
 (subsume '( b (~ c)) '(a b (~ c)) )
-;; ( b (~ c))
+;; (( b (~ c)))
 (subsume '(a b (~ c)) '( b (~ c)))
 ;; NIL
 (subsume '(a b (~ c)) '(d  b (~ c)))
 ;; nil
 (subsume '(a b (~ c)) '((~ a) b (~ c) a))
-;; (A B (~ C))
+;; ((A B (~ C)))
 (subsume '((~ a) b (~ c) a) '(a b (~ c)) )
 ;; nil
 
