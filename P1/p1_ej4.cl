@@ -1130,7 +1130,7 @@
           nil ;; En este caso es UNSAT
         (RES-SAT-rec-p (rest latoms) resul))))) ;; Llamamos de nuevo a la funcion con la simplificacion
     
-;; Funcion que devuelve todos los atomos positivos de un FBF, sin eliminar repetidos
+;; Funcion que devuelve todos los atomos positivos de un FBF, los negativos los pasa a positivos, sin eliminar repetidos
 
 (defun all-posit-atoms (cnf)
   (mapcar #'(lambda (x) 
