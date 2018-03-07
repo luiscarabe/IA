@@ -888,14 +888,14 @@
 
 (defun to-cnf (cnf)
   (cond ((null cnf) cnf)
-        ((some #'null cnf) (list NIL))
-        (t(eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))))) 
+        ((some #'null cnf) (list NIL));; comprobamos si alguno es null 
+        (t(eliminate-subsumed-clauses (eliminate-tautologies (eliminate-repeated-clauses cnf)))))) ;; realizamos las eliminaciones
 
 
 (defun elim-literals (cnf)
   (cond ((null cnf) cnf)
-        ((some #'null cnf) (list NIL))
-  	(t(cons(eliminate-repeated-literals (first cnf))
+        ((some #'null cnf) (list NIL));;si alguno es null
+  	(t(cons(eliminate-repeated-literals (first cnf));; realizamos las eliminaciones
            (elim-literals (rest cnf))))))
 ;;
 ;;  EJEMPLOS:
