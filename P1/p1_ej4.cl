@@ -10,21 +10,21 @@
 (defconstant +or+     'v)
 (defconstant +not+    '~) 
 
-(defun truth-value-p (x) 
+(defun truth-value-p (x) ;; si se trata de un valor de verdad
   (or (eql x T) (eql x NIL)))
 
-(defun unary-connector-p (x) 
+(defun unary-connector-p (x) ;; si se trata de un conector unitario
   (eql x +not+))
 
-(defun binary-connector-p (x) 
+(defun binary-connector-p (x) ;; si se trata de un conector binario
   (or (eql x +bicond+) 
       (eql x +cond+)))
 
-(defun n-ary-connector-p (x) 
+(defun n-ary-connector-p (x) ;; si se trata d eun conector n ario
   (or (eql x +and+) 
       (eql x +or+)))
 
-(defun connector-p (x) 
+(defun connector-p (x) ;; si es un conector
   (or (unary-connector-p  x)
       (binary-connector-p x)
       (n-ary-connector-p  x)))
@@ -91,6 +91,8 @@
 ;; EVALUA A : T si la expresion es un literal, 
 ;;            NIL en caso contrario. 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; comprobamos si se trata de un literal
 (defun literal-p (x) 
   (or (positive-literal-p x)
       (negative-literal-p x)))
@@ -187,7 +189,7 @@
                  (and (wff-infix-p op1)   ;; deberia tener la estructura (FBF <conector> FBF)
                       (null (cdr lex2))
                       (wff-infix-p (car lex2))))
-                ((n-ary-connector-p ex1) ;; Si el segundo elemento es un conector binario
+                ((n-ary-connector-p ex1) ;; Si el segundo elemento es un conector n-ario
                  (and (wff-infix-p op1)  ;; el primer elemento deberia ser FBF
                       (nop-verify ex1 (cdr x))))
                 (t NIL))))))) ;; No es FBF en formato infijo
@@ -520,11 +522,13 @@
 ;; EVALUA A : FBF equivalente en formato prefijo FNC 
 ;;            con conectores ^, v
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(defun combine-elt-lst (elt lst) ;; Combina un elemento (elt) con los elementos de una lista
+;; Combina un elemento (elt) con los elementos de una lista
+(defun combine-elt-lst (elt lst) 
   (if (null lst)
       (list (list elt))
     (mapcar #'(lambda (x) (cons elt x)) lst)))
 
+;;Saca los conectores de las listas
 (defun exchange-NF (nf)
   (if (or (null nf) (literal-p nf)) ;; en caso de que sea null o un literal, devolvemos él mismo
       nf
@@ -532,8 +536,10 @@
       (cons (exchange-and-or connector) ;; intercambiamos ambos conectores, and y or
             (mapcar #'(lambda (x)
                           (cons connector x))
-                (exchange-NF-aux (rest nf))))))) ;;
+                (exchange-NF-aux (rest nf))))))) ;; creamos listas con conector y los elementos de la lista combinados
 
+;; Obtenemos todas las listas posibles de combinar un elemento de una lista dada
+;; con todas las listas
 (defun exchange-NF-aux (nf)
   (if (null nf) 
       NIL ;; devolvemos null en caso de que la forma normal sea null
@@ -541,33 +547,35 @@
       (mapcan #'(lambda (x) 
                   (combine-elt-lst 
                    x 
-                   (exchange-NF-aux (rest nf)))) 
-        (if (literal-p lst) (list lst) (rest lst))))))
+                   (exchange-NF-aux (rest nf)))) ;;intercambiamos conectores
+        (if (literal-p lst) (list lst) (rest lst))))));; obtenemos los elementos de una u otra lista
 
-(defun simplify (connector lst-wffs )
+;;simplifica los conectores que son del mismo tipo
+(defun simplify (connector lst-wffs)
   (if (literal-p lst-wffs)
-      lst-wffs                    
+      lst-wffs ;; si se trata de un literal devolvemos la lista                   
     (mapcan #'(lambda (x) 
                 (cond 
-                 ((literal-p x) (list x))
-                 ((equal connector (first x))
+                 ((literal-p x) (list x));;si se trata de literal 
+                 ((equal connector (first x));; si el conector es igual que el primer elemento de la lista
                   (mapcan 
                       #'(lambda (y) (simplify connector (list y))) 
-                    (rest x))) 
-                 (t (list x))))               
+                    (rest x))) ;;simplificamos conectores de cada lista
+                 (t (list x))))  ;; devolvemos la lista             
       lst-wffs)))
+
 ;;
 (defun cnf (wff)
   (cond
-   ((cnf-p wff) wff)
-   ((literal-p wff)
-    (list +and+ (list +or+ wff)))
-   ((let ((connector (first wff))) 
+   ((cnf-p wff) wff) ;; en caso de que sea un cnf positivo, la devolvemos
+   ((literal-p wff);; si es un literal 
+    (list +and+ (list +or+ wff))) ;; insertamos en una lista un and con una lista de or y la wff
+   ((let ((connector (first wff)));;En caso de que no 
       (cond
-       ((equal +and+ connector) 
-        (cons +and+ (simplify +and+ (mapcar #'cnf (rest wff)))))
-       ((equal +or+ connector) 
-        (cnf (exchange-NF (cons +or+ (simplify +or+ (rest wff)))))))))))
+       ((equal +and+ connector) ;; si el conector es un and
+        (cons +and+ (simplify +and+ (mapcar #'cnf (rest wff)))));; simplificamos el and
+       ((equal +or+ connector) ;; caso de que sea un or
+        (cnf (exchange-NF (cons +or+ (simplify +or+ (rest wff))))))))))) ;;simplificamos e intercambiamos el conector
 
 
 (cnf 'a)
@@ -627,7 +635,7 @@
 (defun eliminate-connectors (cnf)
 	(if (null cnf)
 		NIL
- 	(mapcar #'rest (rest cnf)))
+ 	(mapcar #'rest (rest cnf))) ;; eliminamos los conectores, que estan al principio al ser fbf
 )
 
 (eliminate-connectors 'nil)
@@ -661,13 +669,15 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defun wff-infix-to-cnf (wff)
-  (if (or (null wff) (literal-p wff))
+  (if (or (null wff) (literal-p wff));; si es literal o null
         wff
         (reduce-aux (reduce-cond (infix-to-prefix wff)))))
 
+;; elimina condicionales y bicondicionales
 (defun reduce-cond (wff)
   (eliminate-conditional (eliminate-biconditional wff)))
 
+;; elimina conectores
 (defun reduce-aux (wff)
   (eliminate-connectors (cnf (reduce-scope-of-negation wff))))
 
@@ -690,10 +700,10 @@
 
 (defun eliminate-repeated-literals (k)
   (cond ((null k)NIL)
-          ((literal-p k) k)
-          ((member (first k) (rest k) :test #'equal)
-           (eliminate-repeated-literals (rest k)))
-        (T (cons (first k)(eliminate-repeated-literals (rest k))))))
+          ((literal-p k) k);; si es un litera
+          ((member (first k) (rest k) :test #'equal);; si se encuentra un elemento igual al primero
+           (eliminate-repeated-literals (rest k))) ;; volvemos a buscar eliminando el primero
+        (T (cons (first k)(eliminate-repeated-literals (rest k)))))) ;; si no mantenemos el primero y recursivo
 
 ;;
 ;; EJEMPLO:
@@ -708,20 +718,23 @@
 ;; RECIBE   : cnf - FBF en FNC (lista de clausulas, conjuncion implicita)
 ;; EVALUA A : FNC equivalente sin clausulas repetidas 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; comparamos todas las clausulas con los literales eliminados
 (defun eliminate-repeated-clauses (cnf)
   (compare-clauses (mapcar #'eliminate-repeated-literals cnf)))
 	
+;; comparamos las clausulas de una cnf
 (defun compare-clauses (cnf) 
   (cond ((or (null cnf) (null(rest cnf))) cnf)
-        ((uniq-clause (first cnf) (rest cnf))		
-         (cons (first cnf) (compare-clauses (rest cnf))))
-        (t (compare-clauses (rest cnf)))))
+        ((uniq-clause (first cnf) (rest cnf));;comprobamos si la primera es unica 	
+         (cons (first cnf) (compare-clauses (rest cnf))));; si es unica mantenemos la clausula
+        (t (compare-clauses (rest cnf)))));;si no continuamos con el resto
 
+;;devolvemos si una clausula es unica en una cnf
 (defun uniq-clause (clause cnf)
 	(if(every #'null (mapcar #'(lambda (x) (clauses-not-equal clause x)) cnf)) T 
 		NIL))
 
+;; comprobamos si son o no iguales dos clausulas
 (defun clauses-not-equal (clause1 clause2)
 	(= (length (intersection clause1 clause2 :test 'equal)) (length clause1) (length clause2)))
 ;;
@@ -740,7 +753,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun subsume (K1 K2)
-  (when (null (set-difference K1 K2 :test 'is-equal))
+  (when (null (set-difference K1 K2 :test 'is-equal));; restamos la menor - mayor si no hay elementos esta subsumida
     (list K1)))
 
 ;; Evalua si dos literales son iguales
@@ -776,19 +789,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defun eliminate-subsumed-clauses (cnf) 
-  (eliminate-clauses(
-      nreverse(eliminate-clauses cnf))))
+  (eliminate-clauses( 	;;eliminamos clausulas en un sentido
+      nreverse(eliminate-clauses cnf))));;  y en el inverso
 
 
 (defun eliminate-clauses (cnf)
-  (cond ((or (null cnf) (null(rest cnf))) cnf)
-        ((subsumed-clause (first cnf) (rest cnf))   
-         (cons (first cnf) (eliminate-subsumed-clauses (rest cnf))))
-        (t (eliminate-subsumed-clauses (rest cnf)))))
+  (cond ((or (null cnf) (null(rest cnf))) cnf) 
+        ((subsumed-clause (first cnf) (rest cnf))  ;; si la primera no esta subsumida
+         (cons (first cnf) (eliminate-subsumed-clauses (rest cnf)))) ;;la mantenemos y recursion con el resto
+        (t (eliminate-subsumed-clauses (rest cnf))))) ;; si no recursion eliminando la primera
 
-
+;; comprobamos si esta subsumida en alguna clausula del cnf
 (defun subsumed-clause (clause cnf)
-  (when (every #'null (mapcar #'(lambda (x) (subsume x clause)) cnf)) T ))
+  (when (every #'null (mapcar #'(lambda (x) (subsume x clause)) cnf)) T )) 
 
 ;;
 ;;  EJEMPLOS:
@@ -843,8 +856,8 @@
 
 (defun eliminate-tautologies (cnf) 
   (cond ((null cnf)  cnf)
-      ((tautology-p (first cnf)) (eliminate-tautologies (rest cnf)))
-      (t (cons (first cnf) (eliminate-tautologies (rest cnf))))))
+      ((tautology-p (first cnf)) (eliminate-tautologies (rest cnf))) ;; si es tautologia, recursiva con el resto
+      (t (cons (first cnf) (eliminate-tautologies (rest cnf)))))) ;; si no mantenemos la primera y recursiva con el resto
 
 ;;
 ;;  EJEMPLOS:
