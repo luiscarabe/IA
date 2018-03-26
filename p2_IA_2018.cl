@@ -269,7 +269,17 @@
 ;;
 
 (defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
-  ...)
+  (and (eql (node-state node-1) (node-state node-2))
+       (same-mandatory-to-visit node-1 node-2 planets-mandatory)))
+
+(defun same-mandatory-to-visit (node-1 node-2 planets-mandatory)
+  (same-list (set-difference planets-mandatory (create-list-of-parents node-1))
+             (set-difference planets-mandatory (create-list-of-parents node-2))))
+   
+(defun same-list (list1 list2)
+  (and (null (set-difference list1 list2))
+       (null (set-difference list2 list1))))
+     
        
 (f-search-state-equal-galaxy node-01 node-01) ;-> T
 (f-search-state-equal-galaxy node-01 node-02) ;-> NIL
@@ -300,13 +310,14 @@
   (make-problem 
    :states               *planets*          
    :initial-state        *planet-origin*
-   :f-h                  #'(lambda (state) ...)
-   :f-goal-test          #'(lambda (node) ...)
-   :f-search-state-equal #'(lambda (node-1 node-2)...)
+   :f-h                  #'(lambda (state) (f-h-galaxy state *sensors*))
+   :f-goal-test          #'(lambda (node) (f-goal-test-galaxy node *planets-destination* *planets-mandatory*))
+   :f-search-state-equal #'(lambda (node-1 node-2) (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*))
    :operators            (list 
                           #'(lambda (node)
-                              ...)
-                             ...)))
+                              (navigate-worm-hole (node-state node) *worm-holes* *planets-forbidden*))
+                          #'(lambda (node)
+                              (navigate-white-hole (node-state node) *white-holes*)))))
 
 
 ;;
