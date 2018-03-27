@@ -1,10 +1,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 
 ;;    Lab assignment 2: Search
-;;    LAB GROUP: 
-;;    Couple:  
-;;    Author 1: 
-;;    Author 2:
+;;    LAB GROUP: 2301
+;;    Couple: 05
+;;    Author 1: Nuria Cuaresma Saturio
+;;    Author 2: Luis Carabe Fdez-Pedraza
 ;;
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -174,23 +174,27 @@
 ;;
 
 (defun navigate-worm-hole (state worm-holes planets-forbidden)
+  ; Llamamos a navigate
   (navigate state worm-holes planets-forbidden 'NAVIGATE-WORM-HOLE))
 
+
+
+; Funcion generica para simular la navegacion entre los planetas, dependiendo de la lista de agujeros espaciales que entre por argumento
 
 (defun navigate (state holes planets-forbidden opname)
   
   ; Eliminamos elementos nulos en la lista de acciones
   
-  (remove nil (mapcar #'(lambda(x) 
-                          (unless (member (second x) planets-forbidden) ; Comprobamos que no visitamos planeta prohibido
+  (remove nil (mapcar #'(lambda(conexion) 
+                          (unless (member (second conexion) planets-forbidden) ; Comprobamos que no visitamos planeta prohibido
                             ; Creamos la accion rellenando los parametros correspondientes
                             (setq action (make-action :name opname
                                                       :origin state
-                                                      :final (second x)
-                                                      :cost (third x)))))
+                                                      :final (second conexion)
+                                                      :cost (third conexion)))))
                 ; Creamos una lista con las conexiones que tiene el planeta en el que estamos
                 ; segun la lista de agujeros blancos/de gusano que nos hayan pasado
-                (remove-if-not (lambda(x) (eq (car x) state)) holes))))
+                (remove-if-not (lambda(ini-planet) (eq (car ini-planet) state)) holes))))
 
 
 (navigate-worm-hole 'Mallory *worm-holes* *planets-forbidden*)  ;-> 
@@ -222,25 +226,43 @@
 ;;
 ;; BEGIN: Exercise 3 -- Goal test
 ;;
+;;
+;; Test if we have reached the goal
+;;
+;;  Input:
+;;    node: the current node (vis. the planet we are on)
+;;    planets-destination: the list of possible destination planets 
+;;    planets-mandatory: list of planets that we must have visited
+;;
+;;  Returns:
+;;    T if the node satisfies the goal test, nil in other case
+;;
 
 (defun f-goal-test-galaxy (node planets-destination planets-mandatory) 
   ;; T si estamos en un planeta de destino y hemos visitado todos los planetas obligatorios
   (and (member (node-state node) planets-destination) 
        (visited-all-mandatory-planets (create-list-of-parents node) planets-mandatory)))
 
-;; Miramos si hemos visitado todos los nodos obligatorios
+
+;; Funcion que nos dice si hemos visitado todos los planetas obligatorios
+;; Recibe: lista de planetas visitados y lista de planetas que debemos visitar
 
 (defun visited-all-mandatory-planets (planets-visited planets-mandatory)
   (if (null planets-mandatory)
-      t
+      t ;; Si los planetas obligatorios se han acabado, devolvemos true
+    ;; Comprobamos que el primer planeta obligatorio este en los visitados
     (and (member (first planets-mandatory) planets-visited)
-        (visited-all-mandatory-planets planets-visited (rest planets-mandatory)))))
+         ;; y que el resto de los planetas obligatorios de la lista esten tambien
+         (visited-all-mandatory-planets planets-visited (rest planets-mandatory)))))
 
-;; Creamos la lista de padres de un nodo, incluyendole
+
+;; Funcion que crea la lista de padres de un nodo, incluyendole
 
 (defun create-list-of-parents (node)
   (if (null (node-parent node))
-      (list (node-state node))	
+      ;; Si el nodo ya no tiene padre, le incluimos en la lista
+      (list (node-state node))
+    ;; Si tiene padre, incluimos al nodo en la lista y llamamos a la funcion pasandole a su padre
     (cons (node-state node) (create-list-of-parents(node-parent node)))))
 
 
@@ -267,18 +289,40 @@
 ;;
 ;; BEGIN: Exercise  -- Equal predicate for search states
 ;;
+;; Test if two nodes are the same
+;;
+;;  Input:
+;;    node-1: first node
+;;    node-2: second node
+;;    planets-mandatory: list of planets that we must have visited
+;;
+;;  Returns:
+;;    T if the nodes are the same, nil in other case
+;;
 
 (defun f-search-state-equal-galaxy (node-1 node-2 &optional planets-mandatory)
-  (and (eql (node-state node-1) (node-state node-2))
-       (same-mandatory-to-visit node-1 node-2 planets-mandatory)))
+  ;; Son iguales si:
+  (and (eql (node-state node-1) (node-state node-2)) ;; Corresponden al mismo planeta
+       (same-mandatory-to-visit node-1 node-2 planets-mandatory))) ;; Les falta por visitar los mismos planetas obligatorios
+
+
+;; Funcion que comprueba si a dos nodos les faltan los mismos planetas obligatorios por visitar
 
 (defun same-mandatory-to-visit (node-1 node-2 planets-mandatory)
-  (same-list (set-difference planets-mandatory (create-list-of-parents node-1))
-             (set-difference planets-mandatory (create-list-of-parents node-2))))
-   
+  ;; Comprobamos que las dos siguientes listas sean iguales:
+  (same-list 
+   ;; Los planetas obligatorios que no estan entre los padres del nodo 1
+   (set-difference planets-mandatory (create-list-of-parents node-1))
+   ;; Los planetas obligatorios que no estan entre los padres del nodo 2
+   (set-difference planets-mandatory (create-list-of-parents node-2))))
+
+
+;; Funcion que comprueba si dos listas son iguales
+
 (defun same-list (list1 list2)
-  (and (null (set-difference list1 list2))
-       (null (set-difference list2 list1))))
+  ;; Son iguales si:
+  (and (null (set-difference list1 list2)) ;; Todos los elementos de list1 estan en list2
+       (null (set-difference list2 list1)))) ;; Todos los elementos de list2 estan en list1
      
        
 (f-search-state-equal-galaxy node-01 node-01) ;-> T
@@ -306,18 +350,19 @@
 ;;  BEGIN: Exercise 4 -- Define the galaxy structure
 ;;
 ;;
+
 (defparameter *galaxy-M35* 
   (make-problem 
    :states               *planets*          
    :initial-state        *planet-origin*
-   :f-h                  #'(lambda (state) (f-h-galaxy state *sensors*))
-   :f-goal-test          #'(lambda (node) (f-goal-test-galaxy node *planets-destination* *planets-mandatory*))
-   :f-search-state-equal #'(lambda (node-1 node-2) (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*))
-   :operators            (list 
+   :f-h                  #'(lambda (state) (f-h-galaxy state *sensors*)) ;; Funcion que nos da el valor h de un estado
+   :f-goal-test          #'(lambda (node) (f-goal-test-galaxy node *planets-destination* *planets-mandatory*)) ;; Funcion que nos dice si estamos en el objetivo
+   :f-search-state-equal #'(lambda (node-1 node-2) (f-search-state-equal-galaxy node-1 node-2 *planets-mandatory*)) ;; Funcion que nos dice si dos nodos son iguales
+   :operators            (list ;; Funciones para navegar por agujeros blancos y de gusano
                           #'(lambda (node)
-                              (navigate-worm-hole (node-state node) *worm-holes* *planets-forbidden*))
+                              (navigate-white-hole (node-state node) *white-holes*))
                           #'(lambda (node)
-                              (navigate-white-hole (node-state node) *white-holes*)))))
+                              (navigate-worm-hole (node-state node) *worm-holes* *planets-forbidden*)))))
 
 
 ;;
@@ -330,8 +375,42 @@
 ;;
 ;; BEGIN Exercise 5: Expand node
 ;;
+;; Expands one given node
+;;
+;;  Input:
+;;    node: the node to expand
+;;    problem: the struct with the current problem
+;;
+;;  Returns:
+;;    The list of generated nodes
+;;
+
 (defun expand-node (node problem)
-  ...)
+  ;; Para cada operador de la lista de operadores del problema, llama a la funcion que se encarga de expandir el nodo segun el operador
+  (mapcan #'(lambda(operator) (expand-node-aux node operator problem)) (problem-operators problem)))
+
+
+;; Funcion que, dado un operador, el nodo origen y el problema, crea la lista de todos los nodos resultantes de usar dicho operador sobre dicho nodo origen
+
+(defun expand-node-aux (node operator problem)
+  ;; Creamos el nodo correspondiente a aplicar cada accion
+  (mapcar #'(lambda(accion)
+              ;; Guardamos el valor g y h
+              (let 
+                  ;; g (coste acumulado) resulta de la suma del anterior coste acumulado mas el coste de pasar de un nodo a otro
+                  ((g (+ (node-g node) (action-cost accion))) 
+                   ;; Sacamos h gracias a la funcion guardada en la estructura del problema 
+                   (h (funcall (problem-f-h problem) (action-final accion))))
+                ;; Creamos el nodo y rellenamos sus parametros
+                (make-node :state (action-final accion) ;; Estado final de la accion
+                           :parent node
+                           :action accion
+                           :depth (1+ (node-depth node)) ;; Incrementamos la profundidad del nodo padre
+                           :g g
+                           :h h
+                           :f (+ g h))))
+    ;; Conseguimos la lista de acciones segun el operador
+    (funcall operator node)))
 
 (defparameter node-00
    (make-node :state 'Proserpina :depth 12 :g 10 :f 20) )
