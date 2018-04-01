@@ -744,9 +744,14 @@
    :name 'depth-first
    :node-compare-p #'depth-first-node-compare-p))
 
+(defun node-f-<= (node-1 node-2)
+	(<= (node-f node-1)
+     (node-f node-2)))
+
 ;estrategia para realizar búsqueda en profundidad
 (defun depth-first-node-compare-p (node-1 node-2)
-  )
+	(<= (node-depth node-2)
+		(node-depth node-1)))
 
 (solution-path (graph-search *galaxy-M35* *depth-first*))
 ;;; -> (MALLORY ... )
@@ -758,7 +763,8 @@
 
 ;estrategia para realizar búsqueda en anchura
 (defun breadth-first-node-compare-p (node-1 node-2)
-  )
+	(<= (node-depth node-1)
+		(node-depth node-2)))
 
 (solution-path (graph-search *galaxy-M35* *breadth-first*))
 ;; -> (MALLORY ... )
