@@ -462,15 +462,53 @@
 ;;;
 ;;;  BEGIN Exercise 6 -- Node list management
 ;;;  
-(defun insert-nodes-strategy (nodes lst-nodes strategy)
-  ...)
+;Definimos la funcion node-g
+(defun node-g-<= (node-1 node-2)
+	(<= (node-g node-1)
+     (node-g node-2)))
 
+;Definimos la estrategia unidorm-cost
+(defparameter *uniform-cost*
+  (make-strategy
+   :name 'uniform-cost
+   :node-compare-p #'node-g-<=))
+
+; Inserta de manera ordenada, segun la estrategia, un nodo en la lista
+(defun insert-node (nodes lst-nodes strategy)
+  (if (funcall (strategy-node-compare-p strategy) (first nodes) (first lst-nodes)); comprobamos si el nodo va antes que el primero de la lista
+      (insert-nodes-strategy (rest nodes) (cons (first nodes) lst-nodes) strategy) ; en ese caso lo insertamos y volvemos a llamar a la otra de manera recursiva
+    (cons (first lst-nodes) (insert-node nodes (rest lst-nodes) strategy)))) ;comprobamos con el resto de la lista
+
+(defun insert-nodes-strategy (nodes lst-nodes strategy)
+  (cond ((not(or nodes lst-nodes)) '())
+ 		  ((null strategy) nil)
+ 		  ((null nodes) lst-nodes) ; comprobamos que no sean null ni los nodos ni la estrategia
+    	(T(insert-node nodes lst-nodes strategy))))
+
+; (defun insert-nodes-strategy (nodes lst-nodes strategy)
+;   (if (null nodes)  '()
+;     (let ((nodo-a-insertar (first nodes)) 
+;           (nodo-a-comparar (first lst-nodes))) 
+;       (if (funcall (strategy-node-compare-p strategy) nodo-a-insertar nodo-a-comparar)
+;           (insert-nodes-strategy (rest nodes) (cons nodo-a-insertar lst-nodes) strategy)
+;         (cons nodo-a-comparar (insert-nodes-strategy nodes (rest lst-nodes) strategy))))))
+
+
+; (defun insert-nodes-strategy (nodes lst-nodes strategy)
+; 	(cond ((not(or nodes lst-nodes)) '())
+; 		  ((null strategy) nil)
+; 		  ((null nodes) lst-nodes)
+;   		  ; si no son null ni los nodos ni la estrategia
+; 		  ((funcall (strategy-node-compare-p strategy) (first nodes) (first lst-nodes)); comprobamos si el nodo va antes que el primero de la lista
+; 		      (insert-nodes-strategy (rest nodes) (cons (first nodes) lst-nodes) strategy)) ; en ese caso lo insertamos
+; 		  (T(cons (first lst-nodes) (insert-nodes-strategy nodes (rest lst-nodes) strategy))))) ;comprobamos con el resto de la lista
 
 
 (defparameter node-01
    (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
 (defparameter node-02
    (make-node :state 'Kentares :depth 2 :g 50 :f 50) )
+
 
 (print (insert-nodes-strategy (list node-00 node-01 node-02) 
                         lst-nodes-00 
@@ -563,9 +601,9 @@
 ;;;         :DEPTH 2    :G 50    :H 0   :F 50))
 
 
-;;;(insert-nodes-strategy '(4 8 6 2) '(1 3 5 7)
-;;;		(make-strategy 	:name 'simple
-;;;					:node-compare-p #'<));-> (1 2 3 4 5 6 7)
+(insert-nodes-strategy '(4 8 6 2) '(1 3 5 7)
+		(make-strategy 	:name 'simple
+					:node-compare-p #'<));-> (1 2 3 4 5 6 7)
  
 
 
@@ -584,8 +622,16 @@
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
 
+;Definimos la funcion node-f
+(defun node-f-<= (node-1 node-2)
+	(<= (node-f node-1)
+     (node-f node-2)))
+
+;Definimos la estrategia A-star
 (defparameter *A-star*
-  (make-strategy ...))
+  (make-strategy  
+   :name 'A-star
+   :node-compare-p #'node-f-<=))
 
 ;;
 ;; END: Exercise 7 -- Definition of the A* strategy
@@ -597,15 +643,49 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; 
 ;;;    BEGIN Exercise 8: Search algorithm
+;;;	   Realiza la búsqueda para el problema dado utilizando una estrategia
+;;; ARGUMENTOS:
+;;;		open-list: lista de nodos generados, pero no explorados
+;;; 	closed-list: lista de nodos generados y explorados
+;;; 	strategy: estrategia de búsqueda implementada como una ordenación de la lista open-nodes
+;;; 	problem: problema a resolver
+;;; Evalúa:
+;;;		Si no hay solución: NIL
+;;;		Si hay solución: un nodo que cumple el test objetivo(goal-node)
 ;;;
+
+;;Funcion que realiza la recursion
+(defun graph-search-rec (open-nodes closed-nodes strategy problem)
+  ; extraer el primer nodo de la lista open-nodes
+  (let ((fnode (first open-nodes)))
+  ;si la lista open-nodes está vacía terminar[no se han encontrado solución]
+  (cond ((null fnode) nil)
+          ; si dicho nodo cumple el objetivo devolver y terminar.
+          ((funcall(problem-f-goal-test problem) fnode) fnode)
+          ; en caso contrario
+          ; si el nodo no está en closed-nodes o
+          ((or (not (member fnode closed-nodes)) 
+               ; esta en la lista pero con coste g inferior al del que está en closed-nodes
+               ((node-g-<= fnode (first (member fnode closed-nodes)))))
+           ; * expandir el nodo e insertar los nodos generados en la lista open-nodes de acuerdo con la estrategia strategy.
+           (graph-search-rec (insert-nodes-strategy (expand-node fnode problem) (rest open-nodes) strategy)
+                             ; * incluir el nodo recién expandido al comienzo de la lista closed-nodes.
+                             (cons fnode closed-nodes) strategy problem))
+          ; Continuar la búsqueda eliminando el nodo considerado de la lista open-nodes.
+          (T(graph-search-rec (rest open-nodes) closed-nodes strategy problem)))))
+
+
 (defun graph-search (problem strategy)
-  ...)
-
-
+  ;Inicializar la lista de nodos open-nodes con el estado inicial
+  (let((open-list (list (make-node : state (problem-initial-state problem)))))
+  ;llamamos a la funcion recursiva
+  ;Pasamos la lista de nodos closed-nodes como lista vacía
+  (graph-search-rec open-list '() strategy problem)))
 ;
 ;  Solve a problem using the A* strategy
 ;
-(defun a-star-search (problem)...)
+(defun a-star-search (problem)
+	(graph-search problem *A-star*))
 
 
 (graph-search *galaxy-M35* *A-star*);->
@@ -631,14 +711,18 @@
 ;;; 
 ;;;    BEGIN Exercise 9: Solution path / action sequence
 ;;;
+;;;Función que muestra el camino seguido para llegar a un nodo.
 (defun solution-path (node)
-  ...)
+	(if (null node) '()
+  	(reverse (create-list-of-parents node)))) ;; mostramos los padres del nodo
 
 (solution-path nil) ;;; -> NIL 
 (solution-path (a-star-search *galaxy-M35*))  ;;;-> (MALLORY ...)
 
-(defun action-sequence-aux (node)
-  ...)
+(defun action-sequence (node)
+	(if (null node) '()
+	(reverse(cons (node-action node) (action-sequence (node-parent))))))
+		
 
 (action-sequence (a-star-search *galaxy-M35*))
 ;;; ->
@@ -660,8 +744,9 @@
    :name 'depth-first
    :node-compare-p #'depth-first-node-compare-p))
 
+;estrategia para realizar búsqueda en profundidad
 (defun depth-first-node-compare-p (node-1 node-2)
-  ...)
+  )
 
 (solution-path (graph-search *galaxy-M35* *depth-first*))
 ;;; -> (MALLORY ... )
@@ -671,8 +756,9 @@
    :name 'breadth-first
    :node-compare-p #'breadth-first-node-compare-p))
 
+;estrategia para realizar búsqueda en anchura
 (defun breadth-first-node-compare-p (node-1 node-2)
-  ...)
+  )
 
 (solution-path (graph-search *galaxy-M35* *breadth-first*))
 ;; -> (MALLORY ... )
