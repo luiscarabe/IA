@@ -462,6 +462,17 @@
 ;;;
 ;;;  BEGIN Exercise 6 -- Node list management
 ;;;  
+;; Add the nodes in order in the list-nodes
+;;
+;;  Input:
+;;    nodes: list of nodes that we want to add
+;;	  lst-nodes: list of nodes where we want to add the rest
+;;	  strategy: the way we want to order
+;;
+;;  Returns:
+;;    The list of nodes in order
+;;
+
 ;Definimos la funcion node-g
 (defun node-g-<= (node-1 node-2)
 	(<= (node-g node-1)
@@ -474,35 +485,17 @@
    :node-compare-p #'node-g-<=))
 
 ; Inserta de manera ordenada, segun la estrategia, un nodo en la lista
-(defun insert-node (nodes lst-nodes strategy)
-  (if (funcall (strategy-node-compare-p strategy) (first nodes) (first lst-nodes)); comprobamos si el nodo va antes que el primero de la lista
-      (insert-nodes-strategy (rest nodes) (cons (first nodes) lst-nodes) strategy) ; en ese caso lo insertamos y volvemos a llamar a la otra de manera recursiva
-    (cons (first lst-nodes) (insert-node nodes (rest lst-nodes) strategy)))) ;comprobamos con el resto de la lista
+(defun insert-node (node lst-nodes strategy)
+	(cond ((null lst-nodes) (list node)) ;si no hay lista metemos el nodo
+  		((funcall (strategy-node-compare-p strategy) node (first lst-nodes)); comprobamos si el nodo va antes que el primero de la lista
+      		 (cons node lst-nodes))  ; en ese caso lo insertamos 
+    	(T(cons (first lst-nodes) (insert-node node (rest lst-nodes) strategy))))) ;comprobamos con el resto de la lista, dejando el principio
 
 (defun insert-nodes-strategy (nodes lst-nodes strategy)
   (cond ((not(or nodes lst-nodes)) '())
- 		  ((null strategy) nil)
- 		  ((null nodes) lst-nodes) ; comprobamos que no sean null ni los nodos ni la estrategia
-    	(T(insert-node nodes lst-nodes strategy))))
-
-; (defun insert-nodes-strategy (nodes lst-nodes strategy)
-;   (if (null nodes)  '()
-;     (let ((nodo-a-insertar (first nodes)) 
-;           (nodo-a-comparar (first lst-nodes))) 
-;       (if (funcall (strategy-node-compare-p strategy) nodo-a-insertar nodo-a-comparar)
-;           (insert-nodes-strategy (rest nodes) (cons nodo-a-insertar lst-nodes) strategy)
-;         (cons nodo-a-comparar (insert-nodes-strategy nodes (rest lst-nodes) strategy))))))
-
-
-; (defun insert-nodes-strategy (nodes lst-nodes strategy)
-; 	(cond ((not(or nodes lst-nodes)) '())
-; 		  ((null strategy) nil)
-; 		  ((null nodes) lst-nodes)
-;   		  ; si no son null ni los nodos ni la estrategia
-; 		  ((funcall (strategy-node-compare-p strategy) (first nodes) (first lst-nodes)); comprobamos si el nodo va antes que el primero de la lista
-; 		      (insert-nodes-strategy (rest nodes) (cons (first nodes) lst-nodes) strategy)) ; en ese caso lo insertamos
-; 		  (T(cons (first lst-nodes) (insert-nodes-strategy nodes (rest lst-nodes) strategy))))) ;comprobamos con el resto de la lista
-
+        ((null strategy) nil)
+ 	((null nodes) lst-nodes) ; comprobamos que no sean null ni los nodos ni la estrategia
+    	(T(insert-nodes-strategy (rest nodes) (insert-node (first nodes) lst-nodes strategy) strategy))))
 
 (defparameter node-01
    (make-node :state 'Avalon :depth 0 :g 0 :f 0) )
@@ -603,7 +596,7 @@
 
 (insert-nodes-strategy '(4 8 6 2) '(1 3 5 7)
 		(make-strategy 	:name 'simple
-					:node-compare-p #'<));-> (1 2 3 4 5 6 7)
+					:node-compare-p #'<));-> (1 2 3 4 5 6 7 8)
  
 
 
@@ -621,6 +614,11 @@
 ;; us which nodes should be analyzed first. In the A* strategy, the first 
 ;; node to be analyzed is the one with the smallest value of g+h
 ;;
+;;  Input:
+;;    node-1: first node
+;;    node-2: second node
+;;  Return:
+;;		True if function f of node-1 is smaller than of node-2
 
 ;Definimos la funcion node-f
 (defun node-f-<= (node-1 node-2)
@@ -644,14 +642,14 @@
 ;;; 
 ;;;    BEGIN Exercise 8: Search algorithm
 ;;;	   Realiza la búsqueda para el problema dado utilizando una estrategia
-;;; ARGUMENTOS:
-;;;		open-list: lista de nodos generados, pero no explorados
-;;; 	closed-list: lista de nodos generados y explorados
-;;; 	strategy: estrategia de búsqueda implementada como una ordenación de la lista open-nodes
-;;; 	problem: problema a resolver
-;;; Evalúa:
-;;;		Si no hay solución: NIL
-;;;		Si hay solución: un nodo que cumple el test objetivo(goal-node)
+;;;
+;;; Inputs:
+;;;		open-list: list of generated nodes, but not explored 
+;;; 	closed-list: list explored nodes
+;;; 	strategy: search strategy to order de nodes
+;;; 	problem: problem to solve
+;;; Return:
+;;;		The goal-node, node we are searching
 ;;;
 
 ;;Funcion que realiza la recursion
@@ -711,7 +709,14 @@
 ;;; 
 ;;;    BEGIN Exercise 9: Solution path / action sequence
 ;;;
-;;;Función que muestra el camino seguido para llegar a un nodo.
+;;; Show the way to get to a node 
+;;;
+;;; Inputs:
+;;;		node: end node, the last node
+;;; Return:
+;;;		The list of nodes you pass to get to the node
+;;;
+
 (defun solution-path (node)
 	(if (null node) '()
   	(reverse (create-list-of-parents node)))) ;; mostramos los padres del nodo
@@ -719,9 +724,17 @@
 (solution-path nil) ;;; -> NIL 
 (solution-path (a-star-search *galaxy-M35*))  ;;;-> (MALLORY ...)
 
+;;;
+;;; Show the actions to get to a node 
+;;;
+;;; Inputs:
+;;;		node: end node, the last node
+;;; Return:
+;;;		The list of actions you take to get to the node
+;;;
 (defun action-sequence (node)
 	(if (null node) '()
-	(reverse(cons (node-action node) (action-sequence (node-parent))))))
+	(reverse(cons (node-action node) (action-sequence (node-parent node))))))
 		
 
 (action-sequence (a-star-search *galaxy-M35*))
@@ -738,23 +751,34 @@
 ;;; 
 ;;;    BEGIN Exercise 10: depth-first / breadth-first
 ;;;
-
+;;; It maes the depth search of nodes
+;;;
+;;; Inputs:
+;;    node-1: first node
+;;    node-2: second node
+;;; Return:
+;;;		true if the depth of the first node is bigger
+;;;
 (defparameter *depth-first*
   (make-strategy
    :name 'depth-first
    :node-compare-p #'depth-first-node-compare-p))
 
-(defun node-f-<= (node-1 node-2)
-	(<= (node-f node-1)
-     (node-f node-2)))
-
 ;estrategia para realizar búsqueda en profundidad
 (defun depth-first-node-compare-p (node-1 node-2)
-	(<= (node-depth node-2)
-		(node-depth node-1)))
+	(>= (node-depth node-1)
+		(node-depth node-2)))
 
 (solution-path (graph-search *galaxy-M35* *depth-first*))
 ;;; -> (MALLORY ... )
+
+;;; It maes the breadth search of nodes
+;;;
+;;; Inputs:
+;;    node-1: first node
+;;    node-2: second node
+;;; Return:
+;;;		true if the depth of the first node is smaller
 
 (defparameter *breadth-first*
   (make-strategy
