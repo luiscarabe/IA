@@ -719,7 +719,7 @@
 
 (defun solution-path (node)
 	(if (null node) '()
-  	(reverse (create-list-of-parents node)))) ;; mostramos los padres del nodo
+  	(reverse (cons node (create-list-of-parents node))))) ;; mostramos los padres del nodo
 
 (solution-path nil) ;;; -> NIL 
 (solution-path (a-star-search *galaxy-M35*))  ;;;-> (MALLORY ...)
