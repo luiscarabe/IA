@@ -9,8 +9,8 @@ invierte([], []).
 invierte([X|Rx], Y) :- invierte(Rx,M), concatena(M, [X], Y).
 
 insert([X], [], [X]).
-insert([A-X], [B-Y|Rs], L3) :- X<Y, concatena([A-X], [B-Y|Rs], L3).
-insert([A-X], [B-Y|Rs], L3) :- not(X<Y), insert([A-X], Rs, L4), concatena([B-Y], L4, L3).
+insert([A-X], [B-Y|Rs], L3) :- X=<Y, concatena([A-X], [B-Y|Rs], L3).
+insert([A-X], [B-Y|Rs], L3) :- not(X=<Y), insert([A-X], Rs, L4), concatena([B-Y], L4, L3).
 
 elem_count(_,[],0).
 elem_count(X,[X|Rs],Xn):- elem_count(X, Rs, Xm), Xn is(1+Xm).
@@ -22,4 +22,5 @@ list_count([X|Rx],Y,L) :- list_count(Rx, Y, M), elem_count(X,Y,Rs), concatena([X
 sort_list([],[]).
 sort_list([A-X|Rs], L) :- sort_list(Rs, M), insert([A-X], M, R), R=L.
 
-
+build_tree([], nil).
+build_tree([A-_|Rs], tree(1, X, M) ) :- build_tree(Rs, M), X = tree(A, nil,nil).
