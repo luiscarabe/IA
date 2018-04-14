@@ -28,12 +28,12 @@ elem_count(X,[Y|Rs],Xn):- X\=Y, elem_count(X, Rs, Xn).
 %4.2
 
 list_count([],_,L) :- [] = L.
-list_count([X|Rx],Y,L) :- list_count(Rx, Y, M), elem_count(X,Y,Rs), concatena([X-Rs],M, A), A=L.
+list_count([X|Rx],Y,L) :- list_count(Rx, Y, M), elem_count(X,Y,Rs), concatena([X-Rs],M, L).
 
 %5
 
 sort_list([],[]).
-sort_list([A-X|Rs], L) :- sort_list(Rs, M), insert([A-X], M, R), R=L.
+sort_list([A-X|Rs], L) :- sort_list(Rs, M), insert([A-X], M, L).
 
 %6
 
@@ -51,3 +51,8 @@ encode_elem(A, [1], tree(1,_, tree(A, nil,nil))). % Caso ultima rama de arbol
 encode_elem(A, X, tree(1, tree(_, nil, nil), Rs)) :- Rs \= tree(A,nil,nil), encode_elem(A,M,Rs), concatena([1], M, X).
 
 %7.2
+
+encode_list([], [],_).
+encode_list([X | Rs], Y, T) :- encode_list(Rs,A,T), encode_elem(X,R,T), concatena([R],A,Y).
+
+
