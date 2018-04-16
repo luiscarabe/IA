@@ -87,22 +87,45 @@ build_tree([A-_|Rs], tree(1, X, M) ) :- Rs \= [], build_tree(Rs, M), X = tree(A,
 
 % 7
 
-% 7.1
-% Predicado que usamos para comprobar si una lista contiene los pares de elementos de otra
-% en orden.
-% Input : 	X - lista con los pares de elementos
-% 			Y - lista que deberia contener los elementos de X ordenados
+% 7.1 - encode_elem(X,Y,Tree)
+% Predicado que usamos para codificar X en Y basandose en la estructura del arbol
+% Tree (arbol de Huffman)
+% Input : 	X - elemento a codificar
+% 			Y - elemento codificado
+% 			Tree - arbol de Huffman en el que se basa para codificar
 
-% Caso base: Una lista vacia esta ordenada siempre
-encode_elem(A, [0], tree(A, nil, nil)). % caso base extraordinario
+% Caso base: 
+% Caso excepcional: cuando se crea un arbol con un solo elemento, se crea de la forma tree(A,nil,nil)
+% Por tanto, el elemento de ese arbol se codifica como 0
+encode_elem(A, [0], tree(A, nil, nil)).
+% Caso normal en el que tenemos el elemento en el arbol sin estar en la ultima rama.
+% A esta altura, el elemento esta en el subarbol izquierdo (el derecho no nos interesa)
+% codificamos con un 0
 encode_elem(A, [0], tree(1, tree(A, nil, nil),_)). 
-
+% Caso normal en el que tenemos el elemento en el arbol estando en la ultima rama.
+% A esta altura, el elemento esta en el subarbol derecho (el izquierdo no nos interesa)
+% codificamos con un 1
 encode_elem(A, [1], tree(1,_, tree(A, nil,nil))). % Caso ultima rama de arbol
+
+% Caso recursivo:
+% Si el subarbol derecho no contiene al elemento que buscamos (caso ya cubierto), entonces,
+% llamamos a encode_elem con el subarbol derecho guardando la codificacion en M, despues concatenamos
+% un 1 con M, siendo esto la codificacion del elemento
 encode_elem(A, X, tree(1, tree(_, nil, nil), Rs)) :- Rs \= tree(A,nil,nil), encode_elem(A,M,Rs), concatena([1], M, X).
 
-%7.2
+% 7.2 - encode_list(X,Y, Tree)
+% Predicado que usamos para codificar X en Y basandose en la estructura del arbol
+% Tree (arbol de Huffman)
+% Input : 	X - lista de elementos a codificar
+% 			Y - lista de elementos codificados
+% 			Tree - arbol de Huffman en el que se basa para codificar
 
+% Caso base: una lista vacia se codifica como otra lista vacia
 encode_list([], [],_).
+
+% Caso recursivo: dividimos la primera lista en el primer elemento y el resto. Llamamos a encode_list
+% con dicho resto y guardamos la lista de codificaciones en A. Codificamos el elemento X con encode_elem y 
+% concatenamos dicha codificacion con A, siendo esto la lista de codificaciones resultante
 encode_list([X | Rs], Y, T) :- encode_list(Rs,A,T), encode_elem(X,R,T), concatena([R],A,Y).
 
 % 8
