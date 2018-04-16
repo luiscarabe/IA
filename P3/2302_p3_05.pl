@@ -105,4 +105,7 @@ encode_elem(A, X, tree(1, tree(_, nil, nil), Rs)) :- Rs \= tree(A,nil,nil), enco
 encode_list([], [],_).
 encode_list([X | Rs], Y, T) :- encode_list(Rs,A,T), encode_elem(X,R,T), concatena([R],A,Y).
 
-
+% 8
+dictionary([a,b,c,d,e,f,g,h,i,j,k,l,m,n,o,p,q,r,s,t,u,v,w,x,y,z]).
+encode([],nil).
+encode(L,X) :-dictionary(D),list_count(D, L, LC),sort_list(LC, SL),invierte(SL, I),build_tree(I, BT),encode_list(L, X, BT).
