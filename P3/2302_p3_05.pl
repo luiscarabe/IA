@@ -18,9 +18,19 @@ pertenece_m(X, [_|Rs]) :- pertenece_m(X, Rs).
 concatena([], L, L).
 concatena([X|L1], L2, [X|L3]) :- concatena(L1, L2, L3).
 
-% 2
+% 2 - invierte(X,Y)
+% Predicado que usamos para comprobar si una lista es el resultado de invertir
+% otra.
+% Input : 	X - lista 1
+% 			Y - lista 2 (deberia ser la lista 1 invertida)
 
+% Caso base: Una lista vacia es inversa de si misma
 invierte([], []).
+
+% Caso recursivo:
+% Dividimos la primera lista en su primer elemento y el resto, llamamos a invierte con 
+% este resto y concatenamos el resultado con el primer elemento, 
+% este será el resultado en la segunda lista
 invierte([X|Rx], Y) :- invierte(Rx,M), concatena(M, [X], Y).
 
 %3
@@ -38,7 +48,7 @@ elem_count(X,[Y|Rs],Xn):- X\=Y, elem_count(X, Rs, Xn).
 
 %4.2
 
-list_count([],_,L) :- [] = L.
+list_count([],_,[]).
 list_count([X|Rx],Y,L) :- list_count(Rx, Y, M), elem_count(X,Y,Rs), concatena([X-Rs],M, L).
 
 %5
