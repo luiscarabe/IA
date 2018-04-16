@@ -1,9 +1,20 @@
-% 1
+% 1 - pertenece_m(X,Y)
+% Predicado que usamos para comprobar si un elemento esta en una lista
+% o en alguna de sus sublistas.
+% Input : 	X - elemento a buscar en Y
+% 			Y - lista (con posibles sublistas)
 
+% Caso base: Si el primer elemento de la lista no es una lista (es un atomo),
+%  es true si es igual al elemento que buscamos
 pertenece_m(X, [X|_]) :-  X \= [_|_].
+
+% Caso recursivo: 
+% Si el primer elemento de la lista es una lista, buscamos el elemento en dicha lista
 pertenece_m(X, [Y|_]) :- pertenece_m(X, Y).
+% Buscamos en el resto de la lista
 pertenece_m(X, [_|Rs]) :- pertenece_m(X, Rs).
 
+% Predicado que concatena el primer argumento con el segundo y guarda el resultaod en el tercero
 concatena([], L, L).
 concatena([X|L1], L2, [X|L3]) :- concatena(L1, L2, L3).
 
