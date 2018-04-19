@@ -34,7 +34,7 @@ invierte([], []).
 invierte([X|Rx], Y) :- invierte(Rx,M), concatena(M, [X], Y).
 
 % 3 - insert(X-P,L,R)​
-% Predicado que usamos para comprobar insertar elementos en una lista de manera ordenada.
+% Predicado que usamos para insertar elementos en una lista de manera ordenada.
 % Input : 	X-P - elemento a insertar
 % 			L - lista ordenada donde insertamos
 %			R - lista con los elementos insertados ordenadamente
