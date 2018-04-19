@@ -1,3 +1,10 @@
+%   Practica 3 IA
+%    Grupo: 2301
+%    Pareja: 05
+%    Autor 1: Nuria Cuaresma Saturio
+%    Autor 2: Luis Carabe Fdez-Pedraza
+
+
 % 1 - pertenece_m(X,Y)
 % Predicado que usamos para comprobar si un elemento esta en una lista
 % o en alguna de sus sublistas.
