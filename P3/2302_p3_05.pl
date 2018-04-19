@@ -109,8 +109,11 @@ sort_list([A-X|Rs], L) :- sort_list(Rs, M), insert([A-X], M, L).
 % Caso base: Una lista vacia no hay árbol
 build_tree([], nil).
 % Si la lista tiene un elemento insertamos en el arbol como hoja (con null en sus hijos)
-
 build_tree([A], tree(A, nil, nil)).
+% Caso recursivo:
+% por cada elemento de la lista hacemos un arbol cuyo nodo sea 1, el hijo izquierdo el elemeno 
+% de la lista y el derecho la continuación del arbol con el resto d enodos de la lista, lamando 
+% de manera recursiva
 build_tree([A-_|Rs], tree(1, X, M) ) :- Rs \= [], build_tree(Rs, M), X = tree(A, nil,nil).
 
 % 7
