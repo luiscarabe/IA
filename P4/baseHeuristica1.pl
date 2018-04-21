@@ -1,6 +1,11 @@
 (defun f-eval-Heur (estado)
   (valorar-Heur estado 20 30 50))
-                              
+
+
+;factorFichas - valor que se le da a tener mas fichas en tu lado
+;factorVacios - valor que se le da a tener mas huecos vacios en tu lado
+;preferenciaVacios - cuanto mas alto, mas preferencia a tener huecos en el lado mas lejano a nuestro kalaha
+
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
   (+ (* factorFichas 
         (valorar-fichas estado))
