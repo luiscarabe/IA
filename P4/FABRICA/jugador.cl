@@ -600,15 +600,8 @@
                   ((< pts0 pts1) 2)
                   ((> pts0 pts1) 1)
                   (t 0 ))))
-    (when (and (> *debug-level* 1) (not *tournament*))
-      (format t "~2%  FIN DEL JUEGO por ~A en ~A Jugadas~%  Marcador:  ~A ~A - ~A ~A~%~%"
-        (if (= ganador 0) "TABLAS" "VICTORIA")
-        *njugada*
-        (jugador-nombre (first lst-jug))
-        pts0
-        pts1
-        (jugador-nombre (second lst-jug))))
-    (values ganador nil)))
+	(- pts0 pts1)
+   ))
 
 ;;; ------------------------------------------------------------------------------------------
 ;;; FUNCION PRINCIPAL PARA REALIZAR UNA PARTIDA ENTRE DOS JUGADORES
@@ -893,8 +886,6 @@
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
 
-(defun f-eval-Heur2 (estado)
-  (valorar-Heur estado 100 30 50))
                               
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
   (+ (* factorFichas 
@@ -922,15 +913,24 @@
                       :nombre '|catapumba|
                       :f-juego #'f-j-nmx
                          :f-eval #'f-eval-Heur))
+                         
+(defun ejecutar-nveces (jugador num)
+	(if (eql num 0)
+		0
+		(+ (- (partida 0 2 (list jugador *jdr-aleatorio*)
+				(partida 0 2 (list *jdr-aleatorio* jugador))))
+			(ejecutar-nveces jugador (- num 1)))))
+
+(defun ejecutar-media (jugador num)
+	(print (float (/ (ejecutar-nveces jugador num) num))))
+
+(defun ejecutar (jugador num)
+	(if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
+			(<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
+			(print '-999)
+		(ejecutar-media jugador num)))
+		
 
 
-(defparameter *jdr-pesimillo2* (make-jugador
-                      :nombre '|catapumba2|
-                      :f-juego #'f-j-nmx
-                         :f-eval #'f-eval-Heur2))
-
-(partida 0 2 (list *jdr-pesimillo* *jdr-pesimillo2*))
-
-(partida 0 2 (list *jdr-pesimillo2* *jdr-pesimillo*))
 
 (partida 0 2 (list *jdr-nmx-Regular* *jdr-pesimillo2*))
