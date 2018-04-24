@@ -35,11 +35,11 @@
 (in-package mancala)
 
 ;; SBL
-(declaim #+sbcl(sb-ext:muffle-conditions style-warning)))
+(declaim #+sbcl(sb-ext:muffle-conditions style-warning))
 (defmacro my-with-timeout ((seconds &body timeout-body) &body body)
   `(handler-case
       (sb-ext:with-timeout ,seconds ,@body)
-      (sb-ext:timeout (e) ,@timeout-body))))
+      (sb-ext:timeout (e) ,@timeout-body)))
 
 ;; Allegro 6
 ;(defmacro my-with-timeout  ((seconds &body timeout-body) &body body)
@@ -881,14 +881,14 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(20 30 50))
+(defvar *params* '(12 23 34))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
 
                               
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
-  (+ (* factorFichas 
+	(+ (* factorFichas
         (valorar-fichas estado))
      (* factorVacios 
         (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios))))
@@ -931,6 +931,4 @@
 		(ejecutar-media jugador num)))
 		
 
-
-
-(partida 0 2 (list *jdr-nmx-Regular* *jdr-pesimillo2*))
+(ejecutar *jdr-pesimillo* 30)
