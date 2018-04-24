@@ -888,7 +888,7 @@
 
                               
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
-	(+ (* factorFichas
+  (+ (* factorFichas 
         (valorar-fichas estado))
      (* factorVacios 
         (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios))))
@@ -910,25 +910,25 @@
 
   
 (defparameter *jdr-pesimillo* (make-jugador
-                      :nombre '|catapumba|
-                      :f-juego #'f-j-nmx
-                         :f-eval #'f-eval-Heur))
-                         
+                               :nombre '|catapumba|
+                               :f-juego #'f-j-nmx
+                               :f-eval #'f-eval-Heur))
+
 (defun ejecutar-nveces (jugador num)
-	(if (eql num 0)
-		0
-		(+ (- (partida 0 2 (list jugador *jdr-aleatorio*)
-				(partida 0 2 (list *jdr-aleatorio* jugador))))
-			(ejecutar-nveces jugador (- num 1)))))
+  (if (eql num 0)
+      0
+    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
+          (partida 0 2 (list *jdr-aleatorio* jugador)))
+     (ejecutar-nveces jugador (- num 1)))))
 
 (defun ejecutar-media (jugador num)
-	(print (float (/ (ejecutar-nveces jugador num) num))))
+  (print (float (/ (ejecutar-nveces jugador num) num))))
 
 (defun ejecutar (jugador num)
-	(if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
-			(<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
-			(print '-999)
-		(ejecutar-media jugador num)))
+  (if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
+         (<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
+     (print '-999)
+   (ejecutar-media jugador num)))
 		
 
-(ejecutar *jdr-pesimillo* 30)
+(ejecutar-media *jdr-pesimillo* 50)
