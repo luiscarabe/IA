@@ -888,10 +888,15 @@
 
                               
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
-  (+ (* factorFichas 
-        (valorar-fichas estado))
-     (* factorVacios 
-        (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios))))
+  (if (juego-terminado-p estado)
+      (if (> (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0)
+             (cuenta-fichas (estado-tablero estado) (lado-contrario (estado-lado-sgte-jugador estado)) 0))
+          99999 ; Si hemos ganado
+        0) ; Si hemos perdido    
+    (+ (* factorFichas 
+          (valorar-fichas estado))
+       (* factorVacios 
+(valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios)))))
 
 (defun valorar-fichas (estado)
   (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0))
