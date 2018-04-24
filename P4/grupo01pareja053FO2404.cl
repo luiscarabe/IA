@@ -1,20 +1,26 @@
-(defpackage :grupo01pareja053FO2304 
+(defpackage :grupo01pareja053FO2404 
   (:use :common-lisp :mancala)      
   (:export :heuristica :*alias*))
 
-(in-package grupo01pareja053FO2304)
+(in-package grupo01pareja053FO2404)
 
 (defun heuristica (estado)
-  (valorar-Heur estado 20 30 50))
+  (valorar-Heur estado 0 70 80 90 100))
 
-(defvar *alias* 'Aymimadrelbixo)
+(defvar *alias* 'unpisitoyjustoarribadeunbar)
 
 
-(defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
-  (+ (* factorFichas 
+(defun valorar-Heur (estado factorFichas factorVacios factorVaciosI preferenciaVacios facetorDiferencia)
+  (+ (+ (+ (* factorFichas 
         (valorar-fichas estado))
      (* factorVacios 
-        (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios))))
+        (valorar-vacios (list-lado estado (estado-lado-sgte-jugador estado)) 0 preferenciaVacios)))
+     (* factorVaciosI 
+        (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios)))
+     (* facetorDiferencia
+        (- (suma-fila (estado-tablero estado) (lado-contrario (estado-lado-sgte-jugador estado)))
+           (suma-fila (estado-tablero estado) (estado-lado-sgte-jugador estado))))))
+
 
 (defun valorar-fichas (estado)
   (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0))
