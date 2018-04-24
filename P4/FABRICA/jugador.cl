@@ -881,7 +881,7 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(12 23 34))
+(defvar *params* '(20 30 50))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
@@ -914,7 +914,7 @@
            (valorar-vacios (rest lista) contador (- preferencia 1)))))
 
   
-(defparameter *jdr-pesimillo* (make-jugador
+(defvar *jdr-pesimillo* (make-jugador
                                :nombre '|catapumba|
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur))
@@ -936,4 +936,4 @@
    (ejecutar-media jugador num)))
 		
 
-(ejecutar-media *jdr-pesimillo* 50)
+(ejecutar-media *jdr-pesimillo* 70)
