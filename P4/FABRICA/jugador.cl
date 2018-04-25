@@ -881,7 +881,7 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(20 30 50))
+(defvar *params* '(440 253 643))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
