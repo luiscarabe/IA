@@ -35,11 +35,11 @@
 (in-package mancala)
 
 ;; SBL
-(declaim #+sbcl(sb-ext:muffle-conditions style-warning)))
+(declaim #+sbcl(sb-ext:muffle-conditions style-warning))
 (defmacro my-with-timeout ((seconds &body timeout-body) &body body)
   `(handler-case
       (sb-ext:with-timeout ,seconds ,@body)
-      (sb-ext:timeout (e) ,@timeout-body))))
+      (sb-ext:timeout (e) ,@timeout-body)))
 
 ;; Allegro 6
 ;(defmacro my-with-timeout  ((seconds &body timeout-body) &body body)
@@ -600,15 +600,8 @@
                   ((< pts0 pts1) 2)
                   ((> pts0 pts1) 1)
                   (t 0 ))))
-    (when (and (> *debug-level* 1) (not *tournament*))
-      (format t "~2%  FIN DEL JUEGO por ~A en ~A Jugadas~%  Marcador:  ~A ~A - ~A ~A~%~%"
-        (if (= ganador 0) "TABLAS" "VICTORIA")
-        *njugada*
-        (jugador-nombre (first lst-jug))
-        pts0
-        pts1
-        (jugador-nombre (second lst-jug))))
-    (values ganador nil)))
+	(- pts0 pts1)
+   ))
 
 ;;; ------------------------------------------------------------------------------------------
 ;;; FUNCION PRINCIPAL PARA REALIZAR UNA PARTIDA ENTRE DOS JUGADORES
@@ -888,19 +881,22 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(20 30 50))
+(defvar *params* '(440 253 643))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
 
-(defun f-eval-Heur2 (estado)
-  (valorar-Heur estado 100 30 50))
                               
 (defun valorar-Heur (estado factorFichas factorVacios preferenciaVacios)
-  (+ (* factorFichas 
-        (valorar-fichas estado))
-     (* factorVacios 
-        (valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios))))
+  (if (juego-terminado-p estado)
+      (if (> (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0)
+             (cuenta-fichas (estado-tablero estado) (lado-contrario (estado-lado-sgte-jugador estado)) 0))
+          99999 ; Si hemos ganado
+        0) ; Si hemos perdido    
+    (+ (* factorFichas 
+          (valorar-fichas estado))
+       (* factorVacios 
+(valorar-vacios (reverse (list-lado estado (estado-lado-sgte-jugador estado))) 0 preferenciaVacios)))))
 
 (defun valorar-fichas (estado)
   (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0))
@@ -918,19 +914,26 @@
            (valorar-vacios (rest lista) contador (- preferencia 1)))))
 
   
-(defparameter *jdr-pesimillo* (make-jugador
-                      :nombre '|catapumba|
-                      :f-juego #'f-j-nmx
-                         :f-eval #'f-eval-Heur))
+(defvar *jdr-pesimillo* (make-jugador
+                               :nombre '|catapumba|
+                               :f-juego #'f-j-nmx
+                               :f-eval #'f-eval-Heur))
 
+(defun ejecutar-nveces (jugador num)
+  (if (eql num 0)
+      0
+    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
+          (partida 0 2 (list *jdr-aleatorio* jugador)))
+     (ejecutar-nveces jugador (- num 1)))))
 
-(defparameter *jdr-pesimillo2* (make-jugador
-                      :nombre '|catapumba2|
-                      :f-juego #'f-j-nmx
-                         :f-eval #'f-eval-Heur2))
+(defun ejecutar-media (jugador num)
+  (print (float (/ (ejecutar-nveces jugador num) num))))
 
-(partida 0 2 (list *jdr-pesimillo* *jdr-pesimillo2*))
+(defun ejecutar (jugador num)
+  (if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
+         (<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
+     (print '-999)
+   (ejecutar-media jugador num)))
+		
 
-(partida 0 2 (list *jdr-pesimillo2* *jdr-pesimillo*))
-
-(partida 0 2 (list *jdr-nmx-Regular* *jdr-pesimillo2*))
+(ejecutar-media *jdr-pesimillo* 70)
