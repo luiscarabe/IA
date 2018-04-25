@@ -881,7 +881,7 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(440 253 643))
+(defvar *params* '(160 36 9))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
@@ -936,4 +936,4 @@
    (ejecutar-media jugador num)))
 		
 
-(ejecutar-media *jdr-pesimillo* 70)
+(ejecutar-media *jdr-pesimillo* 50)

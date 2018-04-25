@@ -5,8 +5,8 @@ import sys, os
 def main():
 	fichero = open(sys.argv[1], 'w')
 	
-	for i in range(1,20):
-		valores = numpy.random.randint(0, high = 1000, size = 3)
+	for i in range(1,99999):
+		valores = numpy.random.randint(0, high = 200, size = 3)
 		
 		resultado = ''+str(valores[0])+" "+str(valores[1])+" " + str(valores[2]) + "\t"
 		
