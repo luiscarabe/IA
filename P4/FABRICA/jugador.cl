@@ -919,6 +919,41 @@
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur))
 
+(defvar *paramsExtra* '(1 2 3 40 50 60))
+
+(defun f-eval-Heur2 (estado)
+  (if (juego-terminado-p estado)
+      (if (> (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0)
+             (cuenta-fichas (estado-tablero estado) (lado-contrario (estado-lado-sgte-jugador estado)) 0))
+          9999 ; Si hemos ganado
+        0) ; Si hemos perdido
+  (valorar-Heur2 *paramsExtra* 0 (estado-tablero estado) (estado-lado-sgte-jugador estado))))
+
+(defun valorar-Heur2 (factores index tablero lado)
+  (if (or (eql index 6) (null factores))
+      0
+    (+ (* (first factores)
+          (get-fichas tablero lado index))
+       (valorar-Heur2 (rest factores) (+ index 1) tablero lado))))
+       
+
+(defun ejecutar-nveces (jugador num)
+  (if (eql num 0)
+      0
+    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
+          (partida 0 2 (list *jdr-aleatorio* jugador)))
+       (ejecutar-nveces jugador (- num 1)))))
+
+
+(defparameter *jdr-tremendo* (make-jugador
+                               :nombre '|alucinante|
+                               :f-juego #'f-j-nmx
+                               :f-eval #'f-eval-Heur2))
+
+
+
+
+
 (defun ejecutar-nveces (jugador num)
   (if (eql num 0)
       0
