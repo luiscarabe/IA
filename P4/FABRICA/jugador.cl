@@ -919,7 +919,7 @@
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur))
 
-(defvar *paramsExtra* '(159 73 98 1 56 47))
+(defvar *paramsExtra* '(72 62 67 192 11 87))
 
 (defun f-eval-Heur2 (estado)
   (if (juego-terminado-p estado)
@@ -935,36 +935,31 @@
     (+ (* (first factores)
           (get-fichas tablero lado index))
        (valorar-Heur2 (rest factores) (+ index 1) tablero lado))))
-       
-
-(defun ejecutar-nveces (jugador num)
-  (if (eql num 0)
-      0
-    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
-          (partida 0 2 (list *jdr-aleatorio* jugador)))
-       (ejecutar-nveces jugador (- num 1)))))
 
 
 (defparameter *jdr-tremendo* (make-jugador
                                :nombre '|alucinante|
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur2))
-
+                               
 (defun ejecutar-nveces (jugador num)
   (if (eql num 0)
       0
-    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
-          (partida 0 2 (list *jdr-aleatorio* jugador)))
-     (ejecutar-nveces jugador (- num 1)))))
+    (+ (- (partida 0 2 (list jugador *jdr-nmx-eval-aleatoria*))
+          (partida 0 2 (list *jdr-nmx-eval-aleatoria* jugador)))
+       (ejecutar-nveces jugador (- num 1)))))
+
 
 (defun ejecutar-media (jugador num)
   (print (float (/ (ejecutar-nveces jugador num) num))))
 
 (defun ejecutar (jugador num)
-  (if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
-         (<= 0 (partida 0 2 (list *jdr-nmx-Regular* jugador))))
+  (if (or 	(>= 0 (partida 0 2 (list jugador *jdr-nmx-Bueno*)))
+  			(<= 0 (partida 0 2 (list *jdr-nmx-Bueno* jugador)))
+  			(>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
+         	(<= 0 (partida 0 2 (list *jdr-nmx-Regular* jugador))))
      (print '-35)
    (ejecutar-media jugador num)))
 		
 
-(ejecutar *jdr-tremendo* 2000)
+(ejecutar *jdr-tremendo* 2500)
