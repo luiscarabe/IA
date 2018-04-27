@@ -919,7 +919,7 @@
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur))
 
-(defvar *paramsExtra* '(1 2 3 40 50 60))
+(defvar *paramsExtra* '(173 103 165 41 132 157))
 
 (defun f-eval-Heur2 (estado)
   (if (juego-terminado-p estado)
@@ -950,10 +950,6 @@
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur2))
 
-
-
-
-
 (defun ejecutar-nveces (jugador num)
   (if (eql num 0)
       0
@@ -967,8 +963,8 @@
 (defun ejecutar (jugador num)
   (if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
          (<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
-     (print '-999)
+     (print '-35)
    (ejecutar-media jugador num)))
 		
 
-(ejecutar-media *jdr-pesimillo* 50)
+(ejecutar-media *jdr-tremendo* 30)
