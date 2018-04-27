@@ -881,7 +881,7 @@
 (setq *vermarcador* nil)         ; Activa la visualizacion del marcador
 (setq *debug-nmx* t)         ; Desactiva debuging de negamax
 
-(defvar *params* '(440 253 643))
+(defvar *params* '(160 36 9))
 
 (defun f-eval-Heur (estado)
   (valorar-Heur estado (first *params*) (second *params*) (third *params*)))
@@ -919,21 +919,47 @@
                                :f-juego #'f-j-nmx
                                :f-eval #'f-eval-Heur))
 
+(defvar *paramsExtra* '(72 62 67 192 11 87))
+
+(defun f-eval-Heur2 (estado)
+  (if (juego-terminado-p estado)
+      (if (> (cuenta-fichas (estado-tablero estado) (estado-lado-sgte-jugador estado) 0)
+             (cuenta-fichas (estado-tablero estado) (lado-contrario (estado-lado-sgte-jugador estado)) 0))
+          9999 ; Si hemos ganado
+        0) ; Si hemos perdido
+  (valorar-Heur2 *paramsExtra* 0 (estado-tablero estado) (estado-lado-sgte-jugador estado))))
+
+(defun valorar-Heur2 (factores index tablero lado)
+  (if (or (eql index 6) (null factores))
+      0
+    (+ (* (first factores)
+          (get-fichas tablero lado index))
+       (valorar-Heur2 (rest factores) (+ index 1) tablero lado))))
+
+
+(defparameter *jdr-tremendo* (make-jugador
+                               :nombre '|alucinante|
+                               :f-juego #'f-j-nmx
+                               :f-eval #'f-eval-Heur2))
+                               
 (defun ejecutar-nveces (jugador num)
   (if (eql num 0)
       0
-    (+ (- (partida 0 2 (list jugador *jdr-aleatorio*))
-          (partida 0 2 (list *jdr-aleatorio* jugador)))
-     (ejecutar-nveces jugador (- num 1)))))
+    (+ (- (partida 0 2 (list jugador *jdr-nmx-eval-aleatoria*))
+          (partida 0 2 (list *jdr-nmx-eval-aleatoria* jugador)))
+       (ejecutar-nveces jugador (- num 1)))))
+
 
 (defun ejecutar-media (jugador num)
   (print (float (/ (ejecutar-nveces jugador num) num))))
 
 (defun ejecutar (jugador num)
-  (if (or (>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
-         (<= 0 (partida 0 2 (list *jdr-nmx-Regular*))))
-     (print '-999)
+  (if (or 	(>= 0 (partida 0 2 (list jugador *jdr-nmx-Bueno*)))
+  			(<= 0 (partida 0 2 (list *jdr-nmx-Bueno* jugador)))
+  			(>= 0 (partida 0 2 (list jugador *jdr-nmx-Regular*)))
+         	(<= 0 (partida 0 2 (list *jdr-nmx-Regular* jugador))))
+     (print '-35)
    (ejecutar-media jugador num)))
 		
 
-(ejecutar-media *jdr-pesimillo* 70)
+(ejecutar *jdr-tremendo* 2500)
